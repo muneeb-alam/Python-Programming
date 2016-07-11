@@ -19,7 +19,7 @@ Price6=[3,2,5,4,1,2,3,18,20,19,20]
 Price7=[4,9]
 Price9=[1,2,3,4,5,6,7,8,9,10,1]
 Price8=data[:40]
-Price=Price9
+Price=Price6
 Pmin=None
 Pmax=None
 next_Pmin=None
@@ -48,9 +48,10 @@ while index < len(Price):
         Pmax = current_price
         print 'Pmin,Pmax,next_Pmin,next_Pmax',Pmin,Pmax,next_Pmin,next_Pmax 
 
+        
     
     elif current_price>Pmax and (Pmax-Pmin<Delta):
-        print 'XX'
+        print 'updation of Pmax'
         Pmax=current_price
         print 'Pmin,Pmax,previous_Pmax,next_Pmin,next_Pmax',Pmin,previous_Pmax,Pmax,next_Pmin,next_Pmax
              
@@ -62,7 +63,7 @@ while index < len(Price):
         print 'Pmin,Pmax,previous_Pmax,next_Pmin,next_Pmax',Pmin,previous_Pmax,Pmax,next_Pmin,next_Pmax
             
     if (Pmax-Pmin)>=Delta:
-        print 'Pmax > Pmin'
+        print 'Pmax:',Pmax,'>','Pmin:',Pmin
         print 'Pmin:',Pmin,' is login in'
         print Pmin_list
         print Pmax_list
@@ -112,7 +113,7 @@ while index < len(Price):
         if current_price>Pmax:
             Pmax=current_price
             index_Pmax=index
-            print 'updation of Pmax to ',Pmax
+            print 'updation of Pmax to',Pmax
 
         if current_price>next_Pmax:
             next_Pmax=current_price
@@ -132,7 +133,7 @@ while index < len(Price):
                     if (next_Pmax-Pmin)>(next_Pmax-next_Pmin)+(previous_Pmax-Pmin):
                         Pmin_list.append(Pmin)
                         Pmax_list.append(next_Pmax)
-                        print 'AAA'
+                        print 'AA'
                         Pmin=current_price
                         Pmax=current_price
                         previous_Pmax=None
@@ -149,7 +150,7 @@ while index < len(Price):
                         Pmax_list.append(previous_Pmax)
                         Pmin_list.append(next_Pmin)
                         Pmax_list.append(next_Pmax)
-                        print 'AAB'
+                        print 'AB'
                         Pmin=current_price
                         Pmax=current_price
                         previous_Pmax=None
@@ -164,7 +165,7 @@ while index < len(Price):
                 else:
                     Pmin_list.append(Pmin)
                     Pmax_list.append(next_Pmax)
-                    print 'AAC'
+                    print 'AC'
                     Pmin=current_price
                     Pmax=current_price
                     previous_Pmax=None
@@ -179,8 +180,7 @@ while index < len(Price):
                     
                     
             else:
-                print 'AY'
-                print 'ABA'
+                print 'AD'
                 Pmin_list.append(Pmin)
                 Pmax_list.append(max(previous_Pmax,Pmax))
                 next_Pmin=None
@@ -206,7 +206,7 @@ while index < len(Price):
                 if (next_price-Pmin)>(next_price-current_price)+(previous_Pmax-Pmin):
                     Pmin_list.append(Pmin)
                     Pmax_list.append(next_price)
-                    print 'CCA'
+                    print 'BA'
                     Pmin=None
                     Pmax=None
                     next_Pmin=None
@@ -223,7 +223,7 @@ while index < len(Price):
                     Pmax_list.append(previous_Pmax)
                     Pmin_list.append(current_price)
                     Pmax_list.append(next_price)
-                    print 'CCBA'
+                    print 'BB'
                     Pmin=None
                     Pmax=None
                     next_Pmin=None
@@ -236,7 +236,7 @@ while index < len(Price):
                     break            
             
             else: 
-                print 'CCB'
+                print 'BC'
                 Pmin_list.append(Pmin)
                 Pmax_list.append(max(previous_Pmax,current_price, next_price, Pmax))
                 next_Pmin=None
