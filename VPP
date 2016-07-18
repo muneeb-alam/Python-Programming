@@ -407,7 +407,7 @@ from Classes import *
 needs=sort_price_descending([pd,dsm,battery,feed_in_load]) 
 offers = sort_price_ascending([pv,kwk,battery,draw_down_grid]) 
 
-N=1.0 # no of iterations  (to be written in floating form) 
+N=20.0 # no of iterations  (to be written in floating form) 
  
 pv_profits=list() 
 kwk_profits=list()
@@ -491,16 +491,10 @@ for t in range(int((hours*60)/15)):
                     print 'AA'                            
                     pv_or_KWK_need_power_greater_than_offer_power(need,offer)
                             
-                elif offer.name is 'BatteryStorage' and primary_reserve_status is 0:
-                    if offer.percentage_current_capacity>0.0 and temp_need>=temp_offer and offer.flag==0:
-                        print 'AB'                            
-                        BatteryStorage_source_need_power_greater_than_offer_power(need,offer)
+                elif offer.name is 'BatteryStorage' and offer.percentage_current_capacity>0.0 and temp_need>=temp_offer and offer.flag==0:
+                    print 'AB'                            
+                    BatteryStorage_source_need_power_greater_than_offer_power(need,offer)
                 
-                elif offer.name is 'BatteryStorage' and primary_reserve_status is 1:
-                    print 'Primary Reserve priprity'                    
-                    if offer.percentage_current_capacity>20.0 and temp_need>=temp_offer and offer.flag==0:
-                        print 'AB'                            
-                        BatteryStorage_source_need_power_greater_than_offer_power(need,offer)
                          
     
             elif temp_need -temp_offer<0 and offer.price <= need.price and offer.power>0:
@@ -509,16 +503,9 @@ for t in range(int((hours*60)/15)):
                     print 'BA'                            
                     pv_or_KWK_need_power_less_than_offer_power(need,offer)
                         
-                elif  offer.name is 'BatteryStorage' and primary_reserve_status is 0:
-                    if offer.percentage_current_capacity >0.0 and temp_need<=temp_offer and offer.flag ==0:       
-                        print 'BB'                            
-                        BatteryStorage_source_need_power_less_than_offer_power(need,offer)                        
-                    
-                elif  offer.name is 'BatteryStorage' and primary_reserve_status is 1:
-                    print 'Primary Reserve priprity'
-                    if offer.percentage_current_capacity >20.0 and temp_need<=temp_offer and offer.flag ==0:       
-                        print 'BB'                            
-                        BatteryStorage_source_need_power_less_than_offer_power(need,offer)                        
+                elif  offer.name is 'BatteryStorage' and offer.percentage_current_capacity >0.0 and temp_need<=temp_offer and offer.flag ==0:       
+                    print 'BB'                            
+                    BatteryStorage_source_need_power_less_than_offer_power(need,offer)                        
                 
                            
             elif offer.price>need.price:
@@ -579,6 +566,11 @@ for t in range(int((hours*60)/15)):
 print pv_profits, kwk_profits,battery_profits
 
 y=[pv_profits,kwk_profits,battery_profits]
+
+if t<3:
+    PV_Power=PV_Power[:t+1]
+    KWK_Power=KWK_Power[:t+1]
+
 Z=[Battery_capacity, PV_Power,PV_list, KWK_Power,KWK_list,PD_list,DSM_list]
 labels=['PV Profits', 'KWK Profits', 'Battery Profits']
 colors=['r','g','b']
