@@ -9,100 +9,105 @@
 
 #========================Functions=================================================#
 
-
 #***********************Source_BatteryStorage_Functions***********************************#
 
 # This function gives back new price of BatteryStorage according to depth of discharge shown by variable 'x'.
 def BatteryStorage_source_DOD(x):
-     return (1.939E-08*(x**4) - 4.065E-06*(x**3) + 0.000326*(x**2) - 0.01141*x + 0.2219)*100
+     #return (1.939E-08*(x**4) - 4.065E-06*(x**3) + 0.000326*(x**2) - 0.01141*x + 0.2219)*100
+     return battery.discharging_price
 
 def BatteryStorage_source_need_power_greater_than_offer_power(need,offer):
-    
-    print 'battery current capacity:', offer.percentage_current_capacity                    
-    offer.percentage_current_capacity=((offer.percentage_current_capacity*0.01*offer.usable_capacity_in_kWh)-(temp_offer*hours/4))/offer.usable_capacity_in_kWh*100     
+    print 'Current Capacity:', offer.percentage_current_capacity                    
+    offer.percentage_current_capacity=((offer.percentage_current_capacity*(1/100)*offer.usable_capacity_in_kWh)-(temp_offer*hours/4))/offer.usable_capacity_in_kWh*100     
     offer.DOD=100-offer.percentage_current_capacity    
-    print 'source_battery capacity after discharge', offer.percentage_current_capacity
+    print 'Capacity after Discharge', offer.percentage_current_capacity
     print 'battery DOD', offer.DOD
-    if need.power >= temp_need: 
+    if need.power >= temp_need:
+        print 'case A1'
         used_power=temp_offer
         offer.profit=profit_calculation(offer,need,used_power)
-        print 'Profit=',offer.profit
-        print 'case A1'
+        print offer.name,'Profit:',offer.profit
         need.power=need.power-temp_offer
         offer.power=offer.power-temp_offer
+        
     elif need.power < temp_need:
+        print 'case A2'
         if offer.power-need.power>=0:
+            print 'case A21'
             used_power=need.power
             offer.profit=profit_calculation(offer,need,used_power)
-            print 'Profit=',offer.profit  
-            print 'CASE AA'
+            print offer.name,'Profit:',offer.profit
             offer.power=offer.power-need.power
             need.power=0
         elif offer.power-need.power<0:
+            print 'case A22'
             used_power=offer.power
             offer.profit=profit_calculation(offer,need,used_power)
-            print 'Profit=',offer.profit    
-            print 'CASE AB'
+            print offer.name,'Profit:',offer.profit
             need.power=need.power-offer.power
             offer.power=0
-    print 'Need_R',need.power
-    print 'Offer_R',offer.power
-    if (offer.power==0 or offer.DOD>=100):
+    print 'Remaining Need Power',need.power
+    print 'Remaining Offer Power',offer.power
+    if (offer.power is 0 or offer.DOD>=100):
         offer.flag=1
         print 'Battery peak power for this interval has been used, battery flag=',offer.flag
-    offer.price=BatteryStorage_source_DOD(offer.DOD) # new price after discharge
-    print 'New price',offer.price
+    offer.discharging_price=BatteryStorage_source_DOD(offer.DOD) # new price after discharge
+    print 'New Discharging Price',offer.discharging_price
     return
 
 
 
 def BatteryStorage_source_need_power_less_than_offer_power(need,offer):
-     print 'battery current capacity:', offer.percentage_current_capacity                    
+     print 'Current Capacity:', offer.percentage_current_capacity                    
      offer.percentage_current_capacity=((offer.percentage_current_capacity*0.01*offer.usable_capacity_in_kWh)-(temp_need*hours/4))/offer.usable_capacity_in_kWh*100     
-     print 'source_battery capacity after discharge', offer.percentage_current_capacity
+     print 'Capacity after Discharge', offer.percentage_current_capacity
      offer.DOD=100.0-offer.percentage_current_capacity
      print 'battery DOD', offer.DOD
-     if need.power >= temp_need: 
-         used_power=temp_need
-         print offer.profit
-         offer.profit=profit_calculation(offer,need,used_power)
-         print 'Profit', offer.profit
+     if need.power >= temp_need:
          print 'case B1'
+         used_power=temp_need
+         offer.profit=profit_calculation(offer,need,used_power)
+         print offer.name,'Profit', offer.profit
          offer.power=offer.power-temp_need
          need.power=need.power-temp_need
          
      elif need.power < temp_need:
+         print 'case B2'
          if offer.power-need.power>=0:
+             print 'case B21'
              used_power=need.power
              offer.profit=profit_calculation(offer,need,used_power)
-             print 'Profit=',offer.profit     
-             print 'CASE BA'
+             print offer.name,'Profit=',offer.profit     
              offer.power=offer.power-need.power
              need.power=0
          elif offer.power-need.power<0:
+            print 'case B22'
             used_power=offer.power
             offer.profit=profit_calculation(offer,need,used_power)
-            print 'Profit=',offer.profit     
-            print 'CASE BB'
+            print offer.name,'Profit=',offer.profit     
             need.power=need.power-offer.power
             offer.power=0
-     print 'need_R',need.power
-     print 'offer_R',offer.power,'\n'
-     if (offer.power==0 or offer.DOD>=100):
+     print 'Remaining Need Power',need.power
+     print 'Remaining Offer Power',offer.power,'\n'
+     if (offer.power is 0 or offer.DOD>=100):
         offer.flag=1
         print 'Battery peak power has been used, battery flag =',offer.flag
-     offer.price=BatteryStorage_source_DOD(offer.DOD) # new price after discharge
-     print 'new price',offer.price
+     offer.discharging_price=BatteryStorage_source_DOD(offer.DOD) # new price after discharge
+     print 'New Discharging Price',offer.discharging_price
      return
 
 #***********************Load_BatteryStorage_Functions_End***********************************#
 
 def BatteryStorage_load_need_power_less_than_offer_power(need,offer):
         if  need.power >= temp_need:    
-            if offer.name is 'SolarGeneratingUnit'or offer.name is 'KWK':
+            print 'case C1'
+            if offer.name is not 'BatteryStorage':
+                print 'case C11'
                 used_power=temp_need
                 offer.profit=profit_calculation(offer,need,used_power)
-                print 'Profit=',offer.profit
+                need.profit=profit_calculation_battery_need(offer,need,used_power)
+                print offer.name, 'Profit=',offer.profit
+                print need.name,'Profit=',need.profit
             offer.power=offer.power-temp_need
             need.power=need.power-temp_need
             need.percentage_current_capacity=need.percentage_current_capacity+((temp_need*hours/4))/need.usable_capacity_in_kWh*100
@@ -110,73 +115,88 @@ def BatteryStorage_load_need_power_less_than_offer_power(need,offer):
             need.DOD=100.0-need.percentage_current_capacity
             if need.percentage_current_capacity>=95 and need.percentage_current_capacity<=100:
                 need.flag=2
-                #need.power=0
                 print 'battery is fully charged now', 'need flag=',need.flag           
-            print 'battery_load current capacity',need.percentage_current_capacity
-            print 'battery_load DOD',need.DOD
+            print 'Current Capacity',need.percentage_current_capacity
+            print 'battery DOD',need.DOD
             return need.percentage_current_capacity
+            
         elif need.power < temp_need:
+            print 'case C2'
             if offer.power-need.power>=0:
-                print 'CASE BA'
-                if offer.name is 'SolarGeneratingUnit'or offer.name is 'KWK':
+                print 'case C21'
+                if offer.name is not 'BatteryStprage':
+                    print 'case C211'                    
                     used_power=need.power
                     offer.profit=profit_calculation(offer,need,used_power)
-                    print 'Profit=',offer.profit     
+                    need.profit=profit_calculation_battery_need(offer,need,used_power)
+                    print offer.name, 'Profit=',offer.profit
+                    print need.name,'Profit=',need.profit                    
                 offer.power=offer.power-need.power
                 need.power=0
             elif offer.power-need.power<0:
-                print 'CASE BB'
-                if offer.name is 'SolarGeneratingUnit'or offer.name is 'KWK':
+                print 'case C22'
+                if offer.name is not 'BatteryStorage':
                     used_power=offer.power
                     offer.profit=profit_calculation(offer,need,used_power)
-                    print 'Profit=',offer.profit                     
+                    need.profit=profit_calculation_battery_need(offer,need,used_power)      
+                    print offer.name, 'Profit=',offer.profit
+                    print need.name,'Profit=',need.profit
                 need.power=need.power-offer.power
                 offer.power=0
-                
             need.percentage_current_capacity=need.percentage_current_capacity+((used_power*hours/4))/need.usable_capacity_in_kWh*100
-            print 'need CCA=',need.percentage_current_capacity            
+            print 'Current Capacity=',need.percentage_current_capacity            
             need.DOD=100.0-need.percentage_current_capacity
+            print 'battery DOD',need.DOD
             if need.percentage_current_capacity>=95 and need.percentage_current_capacity<=100:
                 need.flag=2
-                #need.power=0
                 print 'battery is fully charged now', 'need flag=',need.flag            
-            print 'battery_load current capacity',need.percentage_current_capacity
-            print 'battery_load DOD',need.DOD
+            print 'Current Capacity',need.percentage_current_capacity
+            print 'battery DOD',need.DOD
         return
         
 def BatteryStorage_load_need_power_more_than_offer_power(need,offer):        
     if  need.power >= temp_need: 
-        if offer.name is 'SolarGeneratingUnit'or offer.name is 'KWK':
+        print 'case D1'
+        if offer.name is not 'BatteryStorage':
+            print 'case D11'
             used_power=temp_offer
             offer.profit=profit_calculation(offer,need,used_power)
-            print 'Profit=',offer.profit
+            need.profit=profit_calculation_battery_need(offer,need,used_power)
+            print offer.name, 'Profit=',offer.profit
+            print need.name,'Profit=',need.profit
         need.power=need.power-temp_offer
         offer.power=offer.power-temp_offer
         print need.usable_capacity_in_kWh,hours/4,need.percentage_current_capacity,temp_offer,hours/4
         need.percentage_current_capacity=need.percentage_current_capacity+((temp_offer*hours/4))/need.usable_capacity_in_kWh*100
-        print 'CCA=',need.percentage_current_capacity    
+        print 'Current Capacity=',need.percentage_current_capacity    
         need.DOD=100.0-need.percentage_current_capacity
         if need.percentage_current_capacity>=95 and need.percentage_current_capacity<=100:
             need.flag=2
-            #need.power=0
             print 'battery is fully charged now', 'need flag=',need.flag          
         print 'battery_load current capacity',need.percentage_current_capacity
         print 'battery_load DOD ',need.DOD,'\n'      
     elif need.power < temp_need:
+        print 'case D2'
         if offer.power-need.power>=0:
-            print 'CASE AA'
-            if offer.name is 'SolarGeneratingUnit'or offer.name is 'KWK':
+            print 'case D21'
+            if offer.name is not 'BatteryStorage':
+                print 'case D211'                
                 used_power=need.power
                 offer.profit=profit_calculation(offer,need,used_power)
-                print 'Profit=',offer.profit       
+                need.profit=profit_calculation_battery_need(offer,need,used_power)
+                print offer.name, 'Profit=',offer.profit
+                print need.name,'Profit=',need.profit  
             offer.power=offer.power-need.power
             need.power=0
         elif offer.power-need.power<0:
-            print 'CASE AB'
-            if offer.name is 'SolarGeneratingUnit'or offer.name is 'KWK':                
+            print 'case D22'
+            if offer.name is  not 'BatteryStorage':                
+                print 'case D222'
                 used_power=offer.power
                 offer.profit=profit_calculation(offer,need,used_power)
-                print 'Profit=',offer.profit       
+                need.profit=profit_calculation_battery_need(offer,need,used_power)
+                print offer.name, 'Profit=',offer.profit
+                print need.name,'Profit=',need.profit
             need.power=need.power-offer.power
             offer.power=0
         
@@ -185,86 +205,99 @@ def BatteryStorage_load_need_power_more_than_offer_power(need,offer):
         if need.percentage_current_capacity>=100:
             need.flag=2
             print 'battery is fully charged now', 'need flag=',need.flag                         
-        print 'battery_load current capacity',need.percentage_current_capacity
-        print 'battery_load DOD',need.DOD        
+        print 'Current Capacity',need.percentage_current_capacity
+        print 'battery DOD',need.DOD        
         print need.percentage_current_capacity
-        #need.power=0
     return
 
 #**************************pv and KHP Functions***************************************#
 
 def pv_or_KWK_need_power_greater_than_offer_power(need,offer):
     if need.name is 'BatteryStorage' and need.percentage_current_capacity<100.0:
+        print 'case E1'
         BatteryStorage_load_need_power_more_than_offer_power(need,offer)
         
     elif need.name is not 'BatteryStorage':
+        print 'case E2'
         if need.power >= temp_need:
-            if offer.name is 'SolarGeneratingUnit'or offer.name is 'KWK':
+            print 'case E21'
+            if offer.name is not 'BatteryStorage':
+                print 'case E211'
                 used_power=temp_offer
                 offer.profit=profit_calculation(offer,need,used_power)
-                print 'Profit=',offer.profit
-            print 'CASE A1'
+                print offer.name,'Profit=',offer.profit
             need.power=need.power-temp_offer
             offer.power=offer.power-temp_offer
         elif need.power < temp_need:
+            print 'case E22'
             if offer.power-need.power>=0:
-                print 'CASE AA'
-                if offer.name is 'SolarGeneratingUnit'or offer.name is 'KWK':
+                print 'case E221'
+                if offer.name is not 'BatteryStorage':
                     used_power=need.power
                     offer.profit=profit_calculation(offer,need,used_power)
                     print 'Profit=',offer.profit       
                 offer.power=offer.power-need.power
                 need.power=0
             elif offer.power-need.power<0:
-                print 'CASE AB'
-                if offer.name is 'SolarGeneratingUnit'or offer.name is 'KWK':                
+                print 'case E222'
+                if offer.name is not'BatteryStorage':                
                     used_power=offer.power
                     offer.profit=profit_calculation(offer,need,used_power)
                     print 'Profit=',offer.profit       
                 need.power=need.power-offer.power
                 offer.power=0          
-    print 'Need_R',need.power
-    print 'Offer_R',offer.power,'\n'
+    print 'Remaining Need Power',need.power
+    print 'Remaining Offer Power',offer.power,'\n'
     return
         
 def pv_or_KWK_need_power_less_than_offer_power(need,offer):      
     if need.name is 'BatteryStorage' and need.percentage_current_capacity<100.0:
+        print 'case F1'
         BatteryStorage_load_need_power_less_than_offer_power(need,offer)
       
     elif need.name is not 'BatteryStorage':
+        print 'case F2'
         if need.power >= temp_need:
-            print 'CASE B1'
-            if offer.name is 'SolarGeneratingUnit'or offer.name is 'KWK':
+            print 'case F21'
+            if offer.name is not 'BatteryStorage':
+                print 'case F211'
                 used_power=temp_need
                 offer.profit=profit_calculation(offer,need,used_power)
                 print used_power,offer.name,offer.power,offer.price,need.name,need.power,need.price
-                print 'Profit=',offer.profit
+                print offer.name,'Profit=',offer.profit
             offer.power=offer.power-temp_need
             need.power=need.power-temp_need
         elif need.power < temp_need:
+            print 'case F22'
             if offer.power-need.power>=0:
-                print 'CASE BA'
-                if offer.name is 'SolarGeneratingUnit'or offer.name is 'KWK':
+                print 'case F221'
+                if offer.name is not 'BatteryStorage':
+                    print 'case F2211'
                     used_power=need.power
                     offer.profit=profit_calculation(offer,need,used_power)
-                    print 'Profit=',offer.profit     
+                    print offer.name,'Profit=',offer.profit     
                 offer.power=offer.power-need.power
                 need.power=0
             elif offer.power-need.power<0:
-                print 'CASE BB'
-                if offer.name is 'SolarGeneratingUnit'or offer.name is 'KWK':
+                print 'case F222'
+                if offer.name is not 'BatteryStorage':
                     used_power=offer.power
                     offer.profit=profit_calculation(offer,need,used_power)
-                    print 'Profit=',offer.profit                     
+                    print offer.name,'Profit=',offer.profit                     
                 need.power=need.power-offer.power
                 offer.power=0
             
-    print 'offer_r',offer.power,'\n'
+    print 'Remaining Need Power',need.power,
+    print 'Remaining Offer Power',offer.power,'\n'
     return
 
 def profit_calculation(offer,need,used_power):
     offer.profit=offer.profit+(used_power*(hours)/4*need.price-used_power*(hours)/4*offer.price)
     return offer.profit
+    
+def profit_calculation_battery_need(offer,need,used_power):
+    need.profit=need.profit-(used_power*(hours)/4*need.price-used_power*(hours)/4*offer.price)
+    return need.profit    
     
       
     
@@ -298,16 +331,16 @@ def status_of_BatteryStorage(offers,needs):
             if offer.charging_priority is 1:
                 offer.price=offer.charging_price
                 del(offers[index])
-                print 'Need\nCharging Price :',offer.charging_price                
+                print 'Need\nCharging Price :',offer.charging_price,'\n'                
             elif (offer.percentage_current_capacity<20.0 or offer.DOD>80.0) and offer.charging_priority is not 1:
                 offer.price=offer.charging_price
                 del(offers[index])
-                print 'Need\nCharging Price:',offer.charging_price
+                print 'Need\nCharging Price:',offer.charging_price,'\n'
             elif (offer.flag is 0 or offer.percentage_current_capacity>=20.0 or offer.DOD<=80.0) and offer.charging_priority is not 1:
                 index_BatteryStorage=index_of_BatteryStorage(needs)
                 offer.price=offer.discharging_price                
                 del(needs[index_BatteryStorage])
-                print "Offer\nDischarging Price:",offer.discharging_price
+                print "Offer\nDischarging Price:",offer.discharging_price,'\n'
         else:
             index=index+1
             continue  
@@ -374,7 +407,7 @@ from Classes import *
 needs=sort_price_descending([pd,dsm,battery,feed_in_load]) 
 offers = sort_price_ascending([pv,kwk,battery,draw_down_grid]) 
 
-N=2.0 # no of iterations  (to be written in floating form) 
+N=1.0 # no of iterations  (to be written in floating form) 
  
 pv_profits=list() 
 kwk_profits=list()
@@ -382,26 +415,35 @@ battery_profits=list()
 T=list()
 
 hours=1.0
-minutes=(hours*60)
 primary_reserve_status=0
+battery.charging_priority=1
+primary_reserve_status=1
 #PV_Power=PV_Power_Profile()
-PV_Power=[1500,0,100,1500]
-KWK_Power=[2000,2000,2000,2000]
-PD_Power=[500,500,500,5000]
-DSM_Power=[200,1000,200,200]
+PV_Power=[1000,1000,1000,1000]
+KWK_Power=[0,0,0,0]
+PD_Power=[0,0,0,0]
+DSM_Power=[0,0,0,0]
 Battery_Power=[250,250,250,250]
 Battery_Flag=[0,0,0,0]
 Feed_in_Power=[0,0,0,0]
 Feed_out_Power=[0,0,0,0]
 
+Battery_capacity=list()
+PV_list=list()
+KWK_list=list()
+PD_list=list()
+DSM_list=list()
+Feed_in_list=list()
+Draw_out_list=list()
 
 
-for t in range(int(minutes/15)):
+
+for t in range(int((hours*60)/15)):
     print 'iteration number:',t,'\nTime',t*15,'minutes'
     pv.power=int(PV_Power[t])
     pd.power=int(PD_Power[t])
-    dsm.power=int(DSM_Power[t])
-    kwk.power=int(KWK_Power[t])
+    #dsm.power=int(DSM_Power[t])
+    #kwk.power=int(KWK_Power[t])
     battery.power=int(Battery_Power[t])
     battery.flag=int(Battery_Flag[t])
     feed_in_load.power=int(Feed_in_Power[t])
@@ -425,9 +467,14 @@ for t in range(int(minutes/15)):
         while n < (int(N)) and need.power>0.1 and iteration_var<(int(N)+10):
             offer=offers[count]
             if need.name is 'BatteryStorage' and primary_reserve_status is 1:
-                if need.percentage_current_capacity>80.0: continue
+                if need.percentage_current_capacity>=80.0: 
+                    n=n+1 
+                    continue
+                
             elif offer.name is 'BatteryStorage' and primary_reserve_status is 1:
-                if offer.percentage_current_capacity<20.0: continue
+                if offer.percentage_current_capacity<=20.0: 
+                    n=n+1
+                    continue
                
             print 'Offer',offer.name, 'Offered Power',offer.power 
             if temp_offer is None and n is 0:
@@ -493,6 +540,8 @@ for t in range(int(minutes/15)):
             offers=sort_price_ascending(offers)
             prev_offer=offer.name
             count=Removing_Zero_Power_Sources(offers,count) 
+            
+        
                 
             if count is None:count=0
             if offers[count].name is not prev_offer:
@@ -508,22 +557,47 @@ for t in range(int(minutes/15)):
             
 
     print 'End of iteration',t
-    print pv.profit, kwk.profit,battery.profit
+    print 'PV profit:',pv.profit
+    print 'KWK profit:',kwk.profit
+    print 'battery_profit',battery.profit
     pv_profits.append(pv.profit)
     kwk_profits.append(kwk.profit)
     battery_profits.append(battery.profit)
     T.append(t)
+    Battery_capacity.append(battery.percentage_current_capacity)
+    PV_list.append(pv.power)
+    KWK_list.append(kwk.power)
+    PD_list.append(pd.power)
+    DSM_list.append(dsm.power)
+    Feed_in_list.append(feed_in_load.power)
+    Draw_out_list.append(draw_down_grid.power)    
+
 
     if t is 3:break
 
 
 print pv_profits, kwk_profits,battery_profits
-line_up, = plt.plot(T, pv_profits, 'rs')
-line_down,= plt.plot(T, kwk_profits, 'gs')
-line_right,=plt.plot(T,battery_profits,'bs')
-plt.axis([-0.5, 4.5, 0, max(max(pv_profits,kwk_profits,battery_profits))+600])
-plt.xlabel('time')
-plt.legend([line_up, line_down,line_right], ['pv_profits', 'KWK_profits','Battery_Profits'])
+
+y=[pv_profits,kwk_profits,battery_profits]
+Z=[Battery_capacity, PV_Power,PV_list, KWK_Power,KWK_list,PD_list,DSM_list]
+labels=['PV Profits', 'KWK Profits', 'Battery Profits']
+colors=['r','g','b']
+
+plt.figure(1)
+for i in range(len(y)):
+    plt.plot(T,y[i],'o-',color=colors[i],label=labels[i])
+
+plt.legend()
+plt.show()    
+plt.axis([min(T)-0.5, max(T)+1, min(min(y))-200, max(max(y))+600])
+
+colors1=['r','g','b','c','m','y','k']
+labels1=['Battery_capacity', 'PV_Power','PV_list', 'KWK_Power','KWK_list','PD_list','DSM_list']
+plt.figure(2)
+
+for i in range(len(Z)):
+    print i,T,Z[i],len(Z),Z[4]
+    plt.plot(T,Z[i],'o-',color=colors1[i],label=labels1[i])
+plt.legend()
 plt.show()
-
-
+plt.axis([min(T)-0.5, max(T)+1, min(min(Z))-200, max(max(Z))+600])
