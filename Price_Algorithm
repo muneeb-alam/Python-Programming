@@ -13,23 +13,34 @@ Price1=data[:40]
 Price2=[9,15,13,14,18,13,16,12,17,19,20,19,17,13,14,19,25]
 Price3=[3,2,4,1,6,7,5,8,4,9,6,10,5,15,10,16]
 Price4=[1,3,2,1,4,6,8,10,50,5,3,4,5,6,7,8,9,10,11,1]
-Price5=[1,5,10,20,5,1,10,20,10,20]
+Price5=[1,5,10,20,5,1,10,20,10,40,5,26,1,27,28,20,25,45,30]
 Price9=[1,4,2,8,5,1,25,9,50]
+Price10=[2,10,2,5,6,1,10,1,5,6,7,8,9,11,2,3,5]
 Price6=[3,2,5,4,1,2,3,18,20,19,20]
 Price7=[4,9]
 Price9=[1,2,3,4,5,6,7,8,9,10,1]
-Price8=data[:40]
-Price=Price6
+Price8=data[:200]
+Price=Price8
 Pmin=None
 Pmax=None
 next_Pmin=None
 next_Pmax=None
 Pmin_list=list()
 Pmax_list=list()
-Delta=1
+Delta=5
 log=0
 index=0
 previous_Pmax=None
+Profit_list=list()
+
+def show_points_on_graph(x):
+    for a,b in zip(T, x): 
+        plt.text(a, b, str(b))
+        
+def profit_calculation(x,y,z):
+    for i in range(len(x)):
+        z.append(y[i]-x[i])
+    return z
 
 while index < len(Price):
     
@@ -56,7 +67,7 @@ while index < len(Price):
         print 'Pmin,Pmax,previous_Pmax,next_Pmin,next_Pmax',Pmin,previous_Pmax,Pmax,next_Pmin,next_Pmax
              
                          
-    elif current_price<Pmax and (Pmax-Pmin<Delta):
+    elif current_price<Pmin and (Pmax-Pmin<Delta):
         print 'updation of Pmin and Pmax to',current_price
         Pmin=current_price
         Pmax=current_price
@@ -71,12 +82,7 @@ while index < len(Price):
         if previous_Pmax is None:
             previous_Pmax=Pmax
             index_previous_Pmax=index
-        
-        if index<len(Price)-2:
-            if Price[index+1]-Price[index]>=Delta:
-                previous_Pmax=Pmax
-                print 'updation of previous Pmax to',previous_Pmax
-                index_previous_Pmax=index
+
 
         if log is 0:
             print 'log is update'
@@ -92,7 +98,7 @@ while index < len(Price):
             index=index+1
             continue
         
-        if index is len(Price)-1:
+        if index is len(Price)-1: #only last two items are satisfying Delta
             Pmax=max(Pmax,current_price)
             print 'only for last two items'
             Pmin_list.append(Pmin)
@@ -109,19 +115,29 @@ while index < len(Price):
             index_next_Pmax=index
             print 'Pmin,Pmax,previous_Pmax,next_Pmin,next_Pmax',Pmin,previous_Pmax,Pmax,next_Pmin,next_Pmax
             
-            
-        if current_price>Pmax:
+          
+        if index<len(Price)-2:
+            if Price[index+1]-Price[index]>=Delta:
+                previous_Pmax=Pmax
+                print 'updation of previous Pmax to',previous_Pmax
+                index_previous_Pmax=index          
+          
+        if current_price>Pmax and index<len(Price)-2:
             Pmax=current_price
             index_Pmax=index
             print 'updation of Pmax to',Pmax
 
-        if current_price>next_Pmax:
+        if current_price>next_Pmax and index<len(Price)-2:
             next_Pmax=current_price
             print 'updation of next_Pmax',next_Pmax
             index_next_Pmax=index
     
-        print 'Pmin,Pmax,previous_Pmax,next_Pmin,next_Pmax',Pmin,previous_Pmax,Pmax,next_Pmin,next_Pmax
+
                 
+        print 'Pmin,Pmax,previous_Pmax,next_Pmin,next_Pmax',Pmin,previous_Pmax,Pmax,next_Pmin,next_Pmax                
+
+
+
             
         if current_price<next_Pmin and log is 1:
             print 'A'
@@ -201,8 +217,14 @@ while index < len(Price):
             print 'last case'
             print 'Pmin,Pmax,previous_Pmax,next_Pmin,next_Pmax',Pmin,previous_Pmax,Pmax,next_Pmin,next_Pmax
             
+            if next_Pmin is not None: 
+                if index_previous_Pmax<index_next_Pmin:
+                    current_price=min(current_price,next_Pmin)
+                    print 'update current price',current_price
+                
             if (next_price-current_price)>=Delta:
                 previous_Pmax=max(previous_Pmax,Pmax)
+                print 'previous Pmax',previous_Pmax
                 if (next_price-Pmin)>(next_price-current_price)+(previous_Pmax-Pmin):
                     Pmin_list.append(Pmin)
                     Pmax_list.append(next_price)
@@ -253,3 +275,41 @@ while index < len(Price):
     
 print Pmin_list
 print Pmax_list
+
+import matplotlib.pyplot as plt
+
+Profit_list=profit_calculation(Pmin_list,Pmax_list,Profit_list)
+y=[Pmin_list,Pmax_list,Profit_list]
+labels=['Pmin', 'Pmax','Profit']
+colors=['r','g','k']
+
+
+T=list()
+for i in range(len(Pmin_list)):
+    T.append(i)
+    
+plt.figure(1)
+for i in range(len(y)):
+    plt.plot(T,y[i],'o-',color=colors[i],label=labels[i])
+
+plt.legend()
+plt.show()
+plt.axis([min(T)-0.5,max(T)+1,min(min(y))-5,max(max(y))+5])
+show_points_on_graph(Pmin_list)
+show_points_on_graph(Pmax_list)
+plt.legend()
+plt.show()
+
+plt.figure(2)
+for i in range(len(Profit_list)):
+    plt.plot(T,Profit_list,'o-g',label='Profit')   
+plt.legend()
+plt.show()
+show_points_on_graph(Profit_list)
+
+plt.figure(3)
+plt.plot(T,Pmin_list,'o-r',label='Pmin')
+plt.plot(T,Pmax_list,'o-g',label='Pmax')
+plt.legend()
+plt.show()
+plt.axis([min(T)-0.5,max(T)+1,min(min(Pmin_list,Pmax_list))-5,max(max(Pmin_list,Pmax_list))+5])
