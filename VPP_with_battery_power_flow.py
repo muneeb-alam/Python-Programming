@@ -437,7 +437,7 @@ Battery_Power=[250,250,250,250]
 #Offers
 PV_Power=[100,0,10,100]
 KWK_Power=[200,0,10,5]
-Draw_out_Power=[100,0,10,0]
+Draw_out_Power=[30,0,10,0]
 Battery_Power=[250,250,10,250]
 
 battery.percentage_current_capacity=100.0
@@ -476,7 +476,9 @@ for t in range(int((hours*60)/15)):
         n=0
         iteration_var=0
         print 'iteration_var',iteration_var
-        if need.name is offer.name: continue
+        if need.name is 'BatteryStorage':
+            if to_prevent_dual_operation:
+                continue
         while n < (int(N)) and need.power>0.1 and iteration_var<(int(N+20)):
             
             if (battery.power >=0 and battery.percentage_current_capacity>=0.0) or (pv.power or kwk.power or draw_down_grid.power):
@@ -563,8 +565,9 @@ for t in range(int((hours*60)/15)):
                 if offer.power>0 and offer.percentage_current_capacity>0 and offer.price<need.price:
                     offer.power=offer.power
                 else:
-                    print 'Making battery power zero'
+                    print 'Making battery power zero to use another source'
                     offer.power=0
+                    to_prevent_dual_operation=1
                 
             
             offers=sort_price_ascending(offers)
