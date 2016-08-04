@@ -327,19 +327,40 @@ def Removing_Zero_Power_Sources(offers,count):
 def status_of_BatteryStorage(offers,needs):
     index=0
     for offer in offers:
-        if offer.name is 'BatteryStorage':
-               if ((pv.power + kwk.power)>(pd.power + dsm.power)):                
-                   offer.price=offer.charging_price
-                   del(offers[index])
-                   print 'Need\nCharging Price:',offer.charging_price,'\n'
-               else:
-                   index_BatteryStorage=index_of_BatteryStorage(needs)
-                   offer.price=BatteryStorage_source_DOD(100-offer.percentage_current_capacity)              
-                   del(needs[index_BatteryStorage])
-                   print "Offer\nDischarging Price:",offer.discharging_price,'\n'
+        if offer.name is 'BatteryStorage' and reserved_for_grid is not 1:
+            if ((pv.power + kwk.power)>(pd.power + dsm.power)):                
+                offer.price=offer.charging_price
+                del(offers[index])
+                print 'Need\nCharging Price:',offer.charging_price,'\n'
+            else:
+                index_BatteryStorage=index_of_BatteryStorage(needs)
+                offer.price=BatteryStorage_source_DOD(100-offer.percentage_current_capacity)              
+                del(needs[index_BatteryStorage])
+                print "Offer\nDischarging Price:",offer.discharging_price,'\n'
+            
+        elif offer.name is 'BatteryStorage' and reserved_for_grid is 1:
+            if offer.percentage_current_capacity >0.0 and offer.percentage_current_capacity<=20.0:
+                index_BatteryStorage=index_of_BatteryStorage(needs)
+                del(needs[index_Battery_Storage])
+                print 'Battery acting as a source to supply power to grid'
+                offer.price=offer.discharging_price
+            elif offer.percentage_current_capacity >=80.0 and offer.percentage_current_capacity<=100.0:
+                del(offers[index])
+                print 'Battery acting as a need to get energy from grid'
+                offer.price=offer.charging_price
+            elif offer.percentage_current_capacity<80.0 and offer.percentage_current_capacity>20.0:
+                if draw_down_grid.power>0.0:
+                    offer.price=offer.charging_price
+                    del(offers[index])
+                    print 'Between 20 and 80 %, battery acting as need to support the grid'
+                elif draw_down_grid.power<0.0:
+                    offer.price=offer.discharging_price
+                    print 'Between 20 and 80 %, battery acting as a source to support the grid'
+                    index_BatteryStorage=index_of_BatteryStorage(needs)
+                    del(needs[index_Battery_Storage])                                                                          
         else:
             index=index+1
-            continue  
+            continue
     return
     
                             
@@ -374,7 +395,7 @@ def print_needs(needs):
     
     
 def print_offers(offers):
-    print 'Offers:'    
+    print 'Offers:' 
     for offer in offers:
         if offer.name is 'BatteryStorage':
             print 'Name', offer.name,'Power',offer.power, 'Price', offer.price,'Usable capacity',offer.usable_capacity_in_kWh,'(current capacity in %)',offer.percentage_current_capacity,'Profit',offer.profit
@@ -417,7 +438,7 @@ from Classes import *
 needs=sort_price_descending([pd,dsm,battery,feed_in_load]) 
 offers=sort_price_ascending([pv,kwk,battery,draw_down_grid]) 
 
-N=2.0 # no of iterations  (to be written in floating form) 
+N=10.0 # no of iterations  (to be written in floating form) 
  
 pv_profits=list() 
 kwk_profits=list()
@@ -426,21 +447,21 @@ T=list()
 Charging_status=list()
 
 hours=4.0
-primary_reserve_status=0
+primary_reserve_status=1
 
 #Needs
 PD_Power=[200,300,50,0]
-DSM_Power=[800,300,0,0]
+DSM_Power=[300,300,0,0]
 Feed_in_Power=[0,300,0,0]
 Battery_Power=[250,250,250,250]
 
 #Offers
-PV_Power=[100,0,10,100]
+PV_Power=[1000,0,10,100]
 KWK_Power=[200,0,10,5]
-Draw_out_Power=[30,0,10,0]
+Draw_out_Power=[300,0,10,0]
 Battery_Power=[250,250,10,250]
 
-battery.percentage_current_capacity=100.0
+battery.percentage_current_capacity=20.0
 reserved_for_grid=0
 
 Battery_capacity=list()
@@ -464,7 +485,7 @@ for t in range(int((hours*60)/15)):
     draw_down_grid.power=int(Draw_out_Power[t])
     needs=sort_price_descending([pd,dsm,battery,feed_in_load]) 
     offers = sort_price_ascending([pv,kwk,battery,draw_down_grid]) 
-    print "Status of Battery 5:",status_of_BatteryStorage(offers,needs)
+    print "Status of Battery:",status_of_BatteryStorage(offers,needs)
     print_needs(needs)
     print_offers(offers)
     temp_offer=None
@@ -488,13 +509,15 @@ for t in range(int((hours*60)/15)):
             offer=offers[count]
             if need.name is 'BatteryStorage' and primary_reserve_status is 1:
                 if need.percentage_current_capacity>=80.0: 
-                    print 'Primary Reserve Mode A'
+                    print 'Primary Reserve Mode, Battery will act as need for grid in next interval'
+                    reserved_for_grid=1
                     break
                 
             if offer.name is 'BatteryStorage' and primary_reserve_status is 1:
                 if offer.percentage_current_capacity<=20.0:
-                    print 'Primary Reserve Mode B'
+                    print 'Primary Reserve Mode, Battery will act as offer for grid in next interval'
                     if reserved_for_grid is 0:
+                        offer.power=0
                         count=count+1
                         offer=offers[count]
                         reserved_for_grid =1
@@ -588,7 +611,6 @@ for t in range(int((hours*60)/15)):
         
             
             
-
     print 'End of iteration',t
     #print 'PV profit:',pv.profit
     #print 'KWK profit:',kwk.profit
