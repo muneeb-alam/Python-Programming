@@ -1,5 +1,6 @@
-
-# To add zero power code if all the offer powers are zero so that code does not go into loop
+# To transfer power between battery and grid
+# To remove draw out grid and feed in grid
+# To calculate price transfer between grid and battery 
 
 # To add primary reserve in the battery storage system (charging of battery upto 85 percent
 # and discharging upto 15 percent)
@@ -16,7 +17,7 @@
 # This function gives back new price of BatteryStorage according to depth of discharge shown by variable 'x'.
 def BatteryStorage_source_DOD(x):
      #return (1.939E-08*(x**4) - 4.065E-06*(x**3) + 0.000326*(x**2) - 0.01141*x + 0.2219)*100
-     return -3.551E-18*(x**2)+0.05*x+20     
+     #return -3.551E-18*(x**2)+0.05*x+20     
      return battery.discharging_price
 
 def BatteryStorage_source_need_power_greater_than_offer_power(need,offer):
@@ -116,7 +117,7 @@ def BatteryStorage_load_need_power_less_than_offer_power(need,offer):
             need.percentage_current_capacity=need.percentage_current_capacity+((temp_need*hours/4))/need.usable_capacity_in_kWh*100
             print 'need CC=', need.percentage_current_capacity
             
-            if need.percentage_current_capacity>=95 and need.percentage_current_capacity<=100:
+            if need.percentage_current_capacity>=99 and need.percentage_current_capacity<=100:
                 print 'battery is fully charged now'        
             print 'Current Capacity',need.percentage_current_capacity
             return need.percentage_current_capacity
@@ -147,7 +148,7 @@ def BatteryStorage_load_need_power_less_than_offer_power(need,offer):
                 
             need.percentage_current_capacity=need.percentage_current_capacity+((used_power*hours/4))/need.usable_capacity_in_kWh*100
             print 'Current Capacity=',need.percentage_current_capacity
-            if need.percentage_current_capacity>=95 and need.percentage_current_capacity<=100:
+            if need.percentage_current_capacity>=99 and need.percentage_current_capacity<=100:
                 print 'battery is fully charged now'          
             print 'Current Capacity',need.percentage_current_capacity
         return
@@ -170,7 +171,7 @@ def BatteryStorage_load_need_power_more_than_offer_power(need,offer):
         need.percentage_current_capacity=need.percentage_current_capacity+((temp_offer*hours/4))/need.usable_capacity_in_kWh*100
         print 'Current Capacity=',need.percentage_current_capacity    
         
-        if need.percentage_current_capacity>=95 and need.percentage_current_capacity<=100:
+        if need.percentage_current_capacity>=99 and need.percentage_current_capacity<=100:
             print 'battery is fully charged now'          
         print 'battery current capacity',need.percentage_current_capacity
         
@@ -478,7 +479,7 @@ battery_profits=list()
 T=list()
 Charging_status=list()
 
-hours=1.0
+hours=4.0
 primary_reserve_status=1
 
 #Needs
@@ -489,11 +490,11 @@ Battery_Power=[250,250,250,250]
 
 #Offers
 PV_Power=[500,0,10,100]
-KWK_Power=[200,200,10,5]
+KWK_Power=[600,0,10,5]
 #Draw_out_Power=[300,0,10,0]
 Battery_Power=[250,250,10,250]
 Common_Grid_Power=[0,0,0,0]
-Battery_Capacity=[70,20,0,0]
+Battery_Capacity=[0,100,0,0]
 
 
 needs=sort_price_descending([pd,dsm,battery,common_grid]) 
