@@ -47,6 +47,7 @@ def BatteryStorage_source_need_power_greater_than_offer_power(need,offer):
             need.power=need.power-offer.power
             offer.power=0
             
+          
     offer.percentage_current_capacity=((offer.percentage_current_capacity*0.01*offer.usable_capacity_in_kWh)-(used_power*hours/4))/offer.usable_capacity_in_kWh*100                       
     print 'Capacity after Discharge', offer.percentage_current_capacity
     print 'Remaining Need Power',need.power
@@ -88,6 +89,8 @@ def BatteryStorage_source_need_power_less_than_offer_power(need,offer):
             need.power=need.power-offer.power
             offer.power=0
             
+  
+               
      offer.percentage_current_capacity=((offer.percentage_current_capacity*0.01*offer.usable_capacity_in_kWh)-(used_power*hours/4))/offer.usable_capacity_in_kWh*100                       
      print 'Capacity after Discharge', offer.percentage_current_capacity        
      print 'Remaining Need Power',need.power
@@ -337,23 +340,13 @@ def status_of_BatteryStorage(offers,needs):
                 print "Offer\nDischarging Price:",offer.discharging_price,'\n'
             
         elif offer.name is 'BatteryStorage' and reserved_for_grid is 1:
-            if offer.percentage_current_capacity >0.0 and offer.percentage_current_capacity<=20.0:
-                index_BatteryStorage=index_of_BatteryStorage(needs)
-                del(needs[index_BatteryStorage])
-                print 'Battery acting as a source to supply power to grid'
-                offer.price=offer.discharging_price
-            elif offer.percentage_current_capacity >=80.0 and offer.percentage_current_capacity<=100.0:
-                del(offers[index])
-                print 'Battery acting as a need to get energy from grid'
-                offer.price=offer.charging_price
-            elif offer.percentage_current_capacity<80.0 and offer.percentage_current_capacity>20.0:
                 if common_grid.power>0.0:
                     del(offers[index])
-                    print 'Between 20 and 80 %, battery acting as need to support the grid'
+                    print 'battery acting as need to support the grid'
                 elif common_grid.power<0.0:
-                    print 'Between 20 and 80 %, battery acting as a source to support the grid'
+                    print 'battery acting as a source to support the grid'
                     index_BatteryStorage=index_of_BatteryStorage(needs)
-                    del(needs[index_Battery_Storage])                                                                          
+                    del(needs[index_BatteryStorage])                                                                          
         else:
             index=index+1
             continue
@@ -446,8 +439,9 @@ def printPowers(needs,offers):
         print 'Battery Profits',battery_profits
         print 'Battery_capacity',Battery_capacity
         print 'PV Power',PV_list
-        print 'KWK Power',KWK_list
-        print 'Draw out Power',Draw_out_list
+        #print 'KWK Power',KWK_list
+        #print 'Draw out Power',Draw_out_list
+        print 'Common_Grid Power',Common_Grid_list
         print 'PD Power',PD_list
         print 'DSM Power',DSM_list
         print 'Feed in Power',Feed_in_list
@@ -493,8 +487,8 @@ PV_Power=[500,0,10,100]
 KWK_Power=[600,0,10,5]
 #Draw_out_Power=[300,0,10,0]
 Battery_Power=[250,250,10,250]
-Common_Grid_Power=[0,0,0,0]
-Battery_Capacity=[0,100,0,0]
+Common_Grid_Power=[0,-200,0,0]
+Battery_Capacity=[20,80,0,0]
 
 
 needs=sort_price_descending([pd,dsm,battery,common_grid]) 
@@ -539,10 +533,13 @@ for t in range(int((hours*60)/15)):
     temp_offer=None
     count=0
     for need in needs:
+        if need.name is 'Common_Grid':
+            need.power=need.power*-1
+            print 'Common Grid Power',need.power
         temp_need=need.power/N
         temp_price=need.price/N
         print 'Need name', need.name, 'required Power',need.power 
-        if need.power<=0:continue
+        if need.power<=0 :continue
         n=0
         iteration_var=0
         print 'iteration_var',iteration_var
@@ -557,8 +554,9 @@ for t in range(int((hours*60)/15)):
             offer=offers[count]
             if need.name is 'BatteryStorage' and primary_reserve_status is 1:
                 if need.percentage_current_capacity>=80.0: 
-                    print 'Primary Reserve Mode, Battery will act as need for grid in next interval'
+                    print 'Primary Reserve Mode, Battery will act as reserve for grid in next interval'
                     reserved_for_grid=1
+                    primary_reserve_Status=0
                     break
                 
             if offer.name is 'BatteryStorage' and primary_reserve_status is 1:
@@ -570,6 +568,7 @@ for t in range(int((hours*60)/15)):
                             count=count+1
                             offer=offers[count]
                         reserved_for_grid =1
+                        primary_reserve_status=0
                         n=0
                         continue
                                      
@@ -582,28 +581,39 @@ for t in range(int((hours*60)/15)):
                 if (int(N)==1):
                     temp_need=need.power/1.0
             print 'temp_need',temp_need,'temp_offer',temp_offer
-                    
-            if temp_need-temp_offer>=0 and offer.price<=need.price and offer.power>0:
-                print 'A'         
-                if offer.name is not 'BatteryStorage':
-                    print 'AA'                            
-                    pv_or_KWK_need_power_greater_than_offer_power(need,offer)
+            
+            if need.name is not 'Common_Grid':
+                if temp_need-temp_offer>=0 and offer.price<=need.price and offer.power>0 and need.name is not 'Common_Grid':
+                    print 'A'         
+                    if offer.name is not 'BatteryStorage':
+                        print 'AA'                            
+                        pv_or_KWK_need_power_greater_than_offer_power(need,offer)
                             
-                elif offer.name is 'BatteryStorage' and offer.percentage_current_capacity>0.0 and temp_need>=temp_offer and reserved_for_grid is 0:
-                    print 'AB'                            
-                    BatteryStorage_source_need_power_greater_than_offer_power(need,offer)
-                
-                         
-    
-            elif temp_need -temp_offer<0 and offer.price <= need.price and offer.power>0:
-                print 'B'                        
-                if offer.name is not 'BatteryStorage':                    
-                    print 'BA'                            
-                    pv_or_KWK_need_power_less_than_offer_power(need,offer)
+                    elif offer.name is 'BatteryStorage' and offer.percentage_current_capacity>0.0 and temp_need>=temp_offer and reserved_for_grid is 0:
+                        print 'AB'                            
+                        BatteryStorage_source_need_power_greater_than_offer_power(need,offer)
+               
+                elif temp_need -temp_offer<0 and offer.price <= need.price and offer.power>0:
+                    print 'B'                        
+                    if offer.name is not 'BatteryStorage':                    
+                        print 'BA'                            
+                        pv_or_KWK_need_power_less_than_offer_power(need,offer)
                         
-                elif  offer.name is 'BatteryStorage' and offer.percentage_current_capacity >0.0 and temp_need<=temp_offer and reserved_for_grid is 0:       
-                    print 'BB'                            
-                    BatteryStorage_source_need_power_less_than_offer_power(need,offer)                        
+                    elif  offer.name is 'BatteryStorage' and offer.percentage_current_capacity >0.0 and temp_need<=temp_offer and reserved_for_grid is 0:       
+                        print 'BB'                            
+                        BatteryStorage_source_need_power_less_than_offer_power(need,offer)  
+         
+            elif need.name is 'Common_Grid': 
+                if temp_need-temp_offer>=0 and offer.power>0 :
+                    print 'C'
+                    if offer.name is 'BatteryStorage' and offer.percentage_current_capacity>0.0 and reserved_for_grid is 1:
+                        print 'CA'                            
+                        BatteryStorage_source_need_power_greater_than_offer_power(need,offer)
+                
+                elif temp_need-temp_offer<=0 and offer.power>0 :
+                    if offer.name is 'BatteryStorage' and offer.percentage_current_capacity>0.0 and reserved_for_grid is 1:
+                        print 'BC'                            
+                        BatteryStorage_source_need_power_greater_than_offer_power(need,offer)                      
                 
                            
             elif offer.price>need.price:
@@ -624,8 +634,11 @@ for t in range(int((hours*60)/15)):
             
             
             if offer.name is 'BatteryStorage':
-                if offer.power>0 and offer.percentage_current_capacity>0 and offer.price<need.price:
-                    offer.power=offer.power
+                if offer.power>0 and offer.percentage_current_capacity>0:
+                    if need.name is not 'Common_Grid' and offer.price<need.price:
+                        offer.power=offer.power
+                    elif need.name is 'Common_Grid':
+                        continue
                 else:
                     print 'Making battery power zero to use another source'
                     offer.power=0
