@@ -1,7 +1,6 @@
-# To transfer power between battery and grid
 # To run the code without primary reserve and rectify infinite loop problem
 # Grid to provide power to the PD and DSM and then calculate the profits of the grid
-# Grid to provide power to battery when power is excess
+# Grid to provide power to battery when power is excess (use of PV_KWK_GRID and then battery_load functions)
 
 # To update the charging and discharging price of the battery
 
@@ -21,8 +20,9 @@ def BatteryStorage_source_need_power_greater_than_offer_power(need,offer):
         print 'case A1'
         used_power=temp_offer      
         if need.name is 'Common_Grid' and offer.capacity_for_grid-offer.percentage_current_capacity<discharge_factor:
-            need.profit=profit_calculation_grid_need(offer,need,used_power)
-            print 'Common Grid Profits',need.profit
+            #need.profit=profit_calculation_grid_need(offer,need,used_power)
+            #print 'Common Grid Profits',need.profit
+            pass
         elif need.name is 'Common_Grid' and ((offer.capacity_for_grid)-offer.percentage_current_capacity)>=discharge_factor:
             return
         print offer.name,'Profit:',offer.profit
@@ -37,8 +37,9 @@ def BatteryStorage_source_need_power_greater_than_offer_power(need,offer):
             print 'case A21'
             used_power=need.power
             if need.name is 'Common_Grid' and offer.capacity_for_grid-offer.percentage_current_capacity<discharge_factor:
-                need.profit=profit_calculation_grid_need(offer,need,used_power)
-                print 'Common Grid Profits',need.profit
+                #need.profit=profit_calculation_grid_need(offer,need,used_power)
+                #print 'Common Grid Profits',need.profit
+                pass
             elif need.name is 'Common_Grid' and offer.capacity_for_grid-offer.percentage_current_capacity>=discharge_factor:
                 return
             print offer.name,'Profit:',offer.profit
@@ -50,8 +51,9 @@ def BatteryStorage_source_need_power_greater_than_offer_power(need,offer):
             used_power=offer.power
             print used_power
             if need.name is 'Common_Grid'and offer.capacity_for_grid-offer.percentage_current_capacity<discharge_factor:
-                need.profit=profit_calculation_grid_need(offer,need,used_power)
-                print 'Common Grid Profits',need.profit      
+                #need.profit=profit_calculation_grid_need(offer,need,used_power)
+                #print 'Common Grid Profits',need.profit
+                pass
             elif need.name is 'Common_Grid' and offer.capacity_for_grid-offer.percentage_current_capacity>=discharge_factor:
                 return
             print offer.name,'Profit:',offer.profit
@@ -80,8 +82,9 @@ def BatteryStorage_source_need_power_less_than_offer_power(need,offer):
          print 'case B1'
          used_power=temp_need
          if need.name is 'Common_Grid' and offer.capacity_for_grid-offer.percentage_current_capacity<discharge_factor:
-            need.profit=profit_calculation_grid_need(offer,need,used_power)
-            print 'Common Grid Profits',need.profit
+            #need.profit=profit_calculation_grid_need(offer,need,used_power)
+            #print 'Common Grid Profits',need.profit
+             pass
          elif need.name is 'Common_Grid' and offer.capacity_for_grid-offer.percentage_current_capacity>=discharge_factor:
             return  
          print offer.name,'Profit', offer.profit
@@ -95,8 +98,9 @@ def BatteryStorage_source_need_power_less_than_offer_power(need,offer):
              print 'case B21'
              used_power=need.power
              if need.name is 'Common_Grid'and offer.capacity_for_grid-offer.percentage_current_capacity<discharge_factor:
-                 need.profit=profit_calculation_grid_need(offer,need,used_power)
-                 print 'Common Grid Profits',need.profit 
+                 #need.profit=profit_calculation_grid_need(offer,need,used_power)
+                 #print 'Common Grid Profits',need.profit
+                 pass
              elif need.name is 'Common_Grid' and offer.capacity_for_grid-offer.percentage_current_capacity>=discharge_factor:
                 return     
              print offer.name,'Profit=',offer.profit  
@@ -107,8 +111,9 @@ def BatteryStorage_source_need_power_less_than_offer_power(need,offer):
             print 'case B22'
             used_power=offer.power
             if need.name is 'Common_Grid'and offer.capacity_for_grid-offer.percentage_current_capacity<discharge_factor:
-                need.profit=profit_calculation_grid_need(offer,need,used_power)
-                print 'Common Grid Profits',need.profit
+                #need.profit=profit_calculation_grid_need(offer,need,used_power)
+                #print 'Common Grid Profits',need.profit
+                pass
             elif need.name is 'Common_Grid' and offer.capacity_for_grid-offer.percentage_current_capacity>=discharge_factor:
                 return  
             
@@ -241,7 +246,7 @@ def BatteryStorage_load_need_power_more_than_offer_power(need,offer):
 
 #**************************pv and KHP Functions***************************************#
 
-def pv_or_KWK_need_power_greater_than_offer_power(need,offer):
+def pv_or_KWK_or_Grid_need_power_greater_than_offer_power(need,offer):
     if need.name is 'BatteryStorage' and need.percentage_current_capacity<100.0:
         print 'case E1'
         BatteryStorage_load_need_power_more_than_offer_power(need,offer)
@@ -279,7 +284,7 @@ def pv_or_KWK_need_power_greater_than_offer_power(need,offer):
     print 'Remaining Offer Power',offer.power,'\n'
     return
         
-def pv_or_KWK_need_power_less_than_offer_power(need,offer):      
+def pv_or_KWK_or_Grid_need_power_less_than_offer_power(need,offer):      
     if need.name is 'BatteryStorage' and need.percentage_current_capacity<100.0:
         print 'case F1'
         BatteryStorage_load_need_power_less_than_offer_power(need,offer)
@@ -321,10 +326,11 @@ def pv_or_KWK_need_power_less_than_offer_power(need,offer):
     return
 
 def profit_calculation(offer,need,used_power):
-    if need.name is not 'Common_Grid':
+    if need.name is not 'Common_Grid' and offer.name is not 'Common_Grid':
         offer.profit=offer.profit+(used_power*(hours)/4*need.price-used_power*(hours)/4*offer.price)
-    else:
-        offer.profit=offer.profit+(-used_power*(hours)/4*need.price+used_power*(hours)/4*offer.price)        
+    elif offer.name is 'Common_Grid':
+        offer.profit=offer.profit+(used_power*(hours)/4*offer.price)   
+        print 'Grid profits',offer.profit
     return offer.profit
     
 def profit_calculation_battery_need(offer,need,used_power):
@@ -500,7 +506,7 @@ import csv
 from Classes import * 
 
 
-discharge_factor=70
+discharge_factor=19
 
 N=100.0 # no of iterations  (to be written in floating form) 
  
@@ -514,33 +520,31 @@ Charging_status=list()
 hours=4.0
 
 #Needs
-#PD_Power=[300,250,50,0]
-#DSM_Power=[200,400,500,0]
-#Battery_Power=[250,250,250,250]
-
-#Offers
-#PV_Power=[200,900,500,100]
-#KWK_Power=[100,200,50,5]
-#Common_Grid_Power=[0,0,-70,0]
-#Battery_Capacity=[100,80,20,0]
-#Reserve_Status=[0,1,0,0]
-
-#Needs
 PD_Power=[300,250,50,0]
 DSM_Power=[200,400,500,0]
 Battery_Power=[250,250,250,250]
 
 #Offers
-PV_Power=[0,900,500,100]
-KWK_Power=[0,200,50,5]
-Common_Grid_Power=[500,0,-75,0]
+PV_Power=[200,900,500,100]
+KWK_Power=[100,200,50,5]
+Common_Grid_Power=[0,0,-70,0]
 Battery_Capacity=[100,80,20,0]
 Reserve_Status=[0,0,0,0]
 
+#Needs
+#PD_Power=[300,250,50,0]
+#DSM_Power=[200,400,500,0]
+#Battery_Power=[250,250,250,250]
+
+#Offers
+#PV_Power=[0,900,500,100]
+#KWK_Power=[0,200,50,5]
+#Common_Grid_Power=[500,0,-75,0]
+#Battery_Capacity=[0,80,20,0]
+#Reserve_Status=[0,0,0,0]
 
 
-
-x=0
+x=2
 
 needs=sort_price_descending([pd,dsm,battery,common_grid]) 
 offers=sort_price_ascending([pv,kwk,battery,common_grid]) 
@@ -596,7 +600,9 @@ for t in range(int((hours*60)/15)):
         n=0
         iteration_var=0
         print 'iteration_var',iteration_var
+
         while n < (int(N)) and need.power>0.1 and iteration_var<(int(N+20)):
+
             
             if (battery.power >=0 and battery.percentage_current_capacity>=0.0) or (pv.power or kwk.power or common_grid.power):
                 pass
@@ -644,7 +650,7 @@ for t in range(int((hours*60)/15)):
                     print 'A'         
                     if offer.name is not 'BatteryStorage':
                         print 'AA'                            
-                        pv_or_KWK_need_power_greater_than_offer_power(need,offer)
+                        pv_or_KWK_or_Grid_need_power_greater_than_offer_power(need,offer)
                             
                     elif offer.name is 'BatteryStorage' and offer.percentage_current_capacity>0.0 and temp_need>=temp_offer and reserved_for_grid is 0:
                         print 'AB'                            
@@ -654,13 +660,14 @@ for t in range(int((hours*60)/15)):
                     print 'B'                        
                     if offer.name is not 'BatteryStorage':                    
                         print 'BA'                            
-                        pv_or_KWK_need_power_less_than_offer_power(need,offer)
+                        pv_or_KWK_or_Grid_need_power_less_than_offer_power(need,offer)
                         
                     elif  offer.name is 'BatteryStorage' and offer.percentage_current_capacity >0.0 and temp_need<=temp_offer and reserved_for_grid is 0:       
                         print 'BB'                            
                         BatteryStorage_source_need_power_less_than_offer_power(need,offer)  
          
             elif need.name is 'Common_Grid': 
+                print 'C'
                 if temp_need-temp_offer>=0 and offer.power>0 :
                     print 'C'
                     if offer.name is 'BatteryStorage' and offer.percentage_current_capacity>0.0 and reserved_for_grid is 1:
@@ -668,11 +675,16 @@ for t in range(int((hours*60)/15)):
                         BatteryStorage_source_need_power_greater_than_offer_power(need,offer)
                         n=n+1
                 
-                elif temp_need-temp_offer<=0 and offer.power>0 :
+                elif temp_need-temp_offer<0 and offer.power>0 :
+                    print 'D'
                     if offer.name is 'BatteryStorage' and offer.percentage_current_capacity>0.0 and reserved_for_grid is 1:
                         print 'CB'                            
                         BatteryStorage_source_need_power_greater_than_offer_power(need,offer)  
                         n=n+1
+                    else:
+                        
+                        n=n+1
+                        continue
 
                 
                            
@@ -727,6 +739,7 @@ for t in range(int((hours*60)/15)):
             if offers[count].name is prev_offer:
                 n=n+1
             else:
+                print 'CONTINUE'
                 continue
             print_needs(needs)
             print_offers(offers)   
@@ -756,9 +769,7 @@ for t in range(int((hours*60)/15)):
     KWK_list.append(kwk.power)
     PD_list.append(pd.power)
     DSM_list.append(dsm.power)
-    Common_Grid_list.append(common_grid.power)
-    #Feed_in_list.append(feed_in_load.power)
-    #Draw_out_list.append(draw_down_grid.power)          
+    Common_Grid_list.append(common_grid.power)        
     printPowers(needs,offers)
 
     if t is x:break
