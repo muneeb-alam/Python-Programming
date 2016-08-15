@@ -15,7 +15,7 @@ class VPP:
 
         
         class BatteryStorage:
-            def __init__(self,name,power,price,rated_capacity_in_kWh,ageing_factor,usable_capacity_in_kWh,percentage_current_capacity,DOD,flag,charging_priority,charging_price,discharging_price,profit):
+            def __init__(self,name,power,price,rated_capacity_in_kWh,ageing_factor,usable_capacity_in_kWh,percentage_current_capacity,capacity_for_grid,charging_price,discharging_price,profit):
                 self.name=name
                 self.power = power
                 self.price=price
@@ -23,9 +23,7 @@ class VPP:
                 self.ageing_factor=ageing_factor
                 self.usable_capacity_in_kWh=rated_capacity_in_kWh*ageing_factor
                 self.percentage_current_capacity=percentage_current_capacity
-                self.DOD=DOD
-                self.flag=flag
-                self.charging_priority=charging_priority
+                self.capacity_for_grid=capacity_for_grid
                 self.charging_price=charging_price
                 self.discharging_price=discharging_price
                 self.profit=profit
@@ -45,32 +43,25 @@ class VPP:
                 self.profit=profit
 
     class Grid:
-        class Feed_in_Load:
-            def __init__(self,name,power,price):
-                self.name=name
-                self.power = power
-                self.price=price
-    
-    
-        class Draw_Down_Grid:
-            def __init__(self,name,power,price):
-                self.name=name
-                self.power = power
-                self.price=price
                 
-
-
+        class Common_Grid:
+            def __init__(self,name,power,price,feed_in_price,draw_out_price,profit):
+                self.name=name
+                self.power = power
+                self.price=price        
+                self.feed_in_price=feed_in_price
+                self.draw_out_price=draw_out_price
+                self.profit=profit
+               
 #========================HouseHold Objects====================================================#
 
 H1=VPP.HouseHolds('House 1')
-pd=H1.PD('PD',0,28)
-dsm=H1.DSM('DSM',0,30) 
-battery=H1.BatteryStorage('BatteryStorage',250,25,2500,1,2500,0,100,0,0,18,26,0) #name,power,price,rated_capacity_in_kWh,ageing_factor,usable_capacity_in_kWh,percentage_current_capacity,DOD,flag,charging_priority,charging_price,discharging_price,profit 
-pv=H1.SolarGeneratingUnit('SolarGeneratingUnit',400,1,0) 
-kwk=H1.KWK('KWK',0,14,0)
+pd=H1.PD('PD',0,30) # name,power,price
+dsm=H1.DSM('DSM',0,28) # name,power,price
+battery=H1.BatteryStorage('BatteryStorage',250,21,250,1,250,0,0,18,26,0) #name,power,price,rated_capacity_in_kWh,ageing_factor,usable_capacity_in_kWh,percentage_current_capacity,DOD,flag,charging_priority,charging_price,discharging_price,profit 
+pv=H1.SolarGeneratingUnit('SolarGeneratingUnit',400,1,0) # name, power,price 
+kwk=H1.KWK('KWK',0,14,0) # name, power,price
 
 #========================Grid Objects=================================================#
 
-
-feed_in_load=VPP.Grid.Feed_in_Load('feed_in_load',100,24) 
-draw_down_grid=VPP.Grid.Draw_Down_Grid('Draw_Down_Grid',0,6)
+common_grid=VPP.Grid.Common_Grid('Common_Grid',-10,0,12,30,0) #name, power,price, feed_in_price,draw_out_price,profit
