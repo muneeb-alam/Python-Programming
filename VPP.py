@@ -503,14 +503,13 @@ def print_offers(offers):
     print '\n'
 
 def printPowers(needs,offers):
-
-        print 'Battery_capacity',Battery_capacity
-        print 'PV Power',PV_list
-        print 'KWK Power',KWK_list
-        print 'Common_Grid Power',Common_Grid_list
-        print 'PD Power',PD_list
+        print '\nPD Power',PD_list
         print 'DSM Power',DSM_list
-        print 'PV Profits',pv_profits
+        print '\nPV Power',PV_list
+        print 'KWK Power',KWK_list        
+        print '\n Battery_capacity',Battery_capacity
+        print 'Common_Grid Power',Common_Grid_list
+        print '\nPV Profits',pv_profits
         print 'KWK Profits',kwk_profits
         print 'Battery Profits',battery_profits
         print  'Common Grid Profits',common_grid_profits
@@ -535,8 +534,8 @@ from Classes import *
 
 discharge_factor=99 # How much the battery should be discharged while supporting the grid
 N=100.0 # no of iterations  (to be written in floating form) 
-x=7 # break point
-hours=4.0
+x=1 # break point
+hours=1.0
 reserved_for_grid=0
 primary_reserve_status=0
 
@@ -555,33 +554,33 @@ DSM_list=list()
 Common_Grid_list=list()
 
 #Permanent Needs for four time intervals
-#PD_Power=[140,200,200,100,100,200,200,100]
-#DSM_Power=[200,300,240,200,200,300,240,200]
+PD_Power=[0,200,200,100,100,200,200,100]
+DSM_Power=[0,300,240,200,200,300,240,200]
 
 #Permanent Offers for four time intervals
-#PV_Power=[1000,1000,300,0,90,200,300,0]
-#KWK_Power=[200,0,140,0,400,460,140,0]
+PV_Power=[1000,1000,300,0,90,200,300,0]
+KWK_Power=[200,100,140,0,500,460,140,0]
 
 #Conditional Needs or Offers
-#Common_Grid_Power=[30,-50,-300,200,50,-1,-190,200] # negative sign in power means that grid will acts as load and postive sign means grid has excess of electricity and will act as source
-#Battery_Power=[250,250,250,250,250,250,250,250] # Battery power remains same all the time (assumption)
-#Battery_Capacity=[10,80,20,0,0,80,20,0] # Only first entry of this array will be used in code. The rest will be updated after each time interval.
-#Reserve_Status=[1,1,0,0,0,0,0,0] # Reserve status for grid
-
-#Permanent Needs for four time intervals
-PD_Power=[0,0,0,0,0,0,0,0]
-DSM_Power=[0,0,0,0,0,0,0,0]
-
-#Permanent Offers for four time intervals
-PV_Power=[0,0,0,0,0,0,0,0]
-KWK_Power=[0,0,0,0,0,0,0,0]
-
-#Conditional Needs or Offers
-Common_Grid_Power=[250,250,-500,-250,500,-1,-190,200] # negative sign in power means that grid will acts as load and postive sign means grid has excess of electricity and will act as source
+Common_Grid_Power=[300,-50,-300,200,50,-10,-190,200] # negative sign in power means that grid will acts as load and postive sign means grid has excess of electricity and will act as source
 Battery_Power=[250,250,250,250,250,250,250,250] # Battery power remains same all the time (assumption)
 Battery_Capacity=[0,80,20,0,0,80,20,0] # Only first entry of this array will be used in code. The rest will be updated after each time interval.
-Reserve_Status=[1,1,1,1,1,1,1,1] # Reserve status for grid
-sign_change=0
+Reserve_Status=[0,0,0,0,1,1,1,1] # Reserve status for grid
+
+#Permanent Needs for four time intervals
+#PD_Power=[0,0,0,0,0,0,0,0]
+#DSM_Power=[0,0,0,0,0,0,0,0]
+
+#Permanent Offers for four time intervals
+#PV_Power=[0,0,0,0,0,0,0,0]
+#KWK_Power=[0,0,0,0,0,0,0,0]
+
+#Conditional Needs or Offers
+#Common_Grid_Power=[250,250,-500,-250,500,-1,-190,200] # negative sign in power means that grid will acts as load and postive sign means grid has excess of electricity and will act as source
+#Battery_Power=[250,250,250,250,250,250,250,250] # Battery power remains same all the time (assumption)
+#Battery_Capacity=[0,80,20,0,0,80,20,0] # Only first entry of this array will be used in code. The rest will be updated after each time interval.
+#Reserve_Status=[1,1,1,1,1,1,1,1] # Reserve status for grid
+
 
 for t in range(int((hours*60)/15)):
     print 'iteration number:',t,'\nTime',t*15,'minutes'
@@ -609,7 +608,6 @@ for t in range(int((hours*60)/15)):
     for need in needs:
         if need.name is 'Common_Grid':
             need.power=need.power*-1
-            sign_change=1
             print 'Common Grid Power',need.power
         temp_need=need.power/N
         temp_price=need.price/N
