@@ -9,7 +9,7 @@
 
 def BatteryStorage_source_DOD(x):
      #return (1.939E-08*(x**4) - 4.065E-06*(x**3) + 0.000326*(x**2) - 0.01141*x + 0.2219)*100
-     #return -3.551E-18*(x**2)+0.05*x+20     
+     #return -3.551E-18*(x**2)+0.05*x+28   
      return battery.discharging_price
 
 # This function is used when Battery acts as source and need(load) power is more than source power.
@@ -473,6 +473,12 @@ def sorting_needs_and_offers(needs,offers):
     offers=sorted(offers, key=lambda k: k.price)
     print_needs(needs)
     print_offers(offers)
+    
+def sort_price_ascending(string):
+    return sorted(string, key=lambda k: k.price)
+    
+def sort_price_descending(string):
+    return sorted(string, key=lambda k: k.price, reverse = True)
 
 
 def print_needs(needs):
@@ -528,8 +534,8 @@ from Classes import *
 
 
 discharge_factor=99 # How much the battery should be discharged while supporting the grid
-N=5.0 # no of iterations  (to be written in floating form) 
-x=3 # break point
+N=100.0 # no of iterations  (to be written in floating form) 
+x=7 # break point
 hours=4.0
 reserved_for_grid=0
 primary_reserve_status=0
@@ -549,30 +555,33 @@ DSM_list=list()
 Common_Grid_list=list()
 
 #Permanent Needs for four time intervals
-PD_Power=[100,200,200,100,100,200,200,100]
-DSM_Power=[200,300,240,200,200,300,240,200]
+#PD_Power=[140,200,200,100,100,200,200,100]
+#DSM_Power=[200,300,240,200,200,300,240,200]
 
 #Permanent Offers for four time intervals
-PV_Power=[90,200,300,0,90,200,300,0]
-KWK_Power=[400,460,140,0,400,460,140,0]
+#PV_Power=[1000,1000,300,0,90,200,300,0]
+#KWK_Power=[200,0,140,0,400,460,140,0]
 
 #Conditional Needs or Offers
-Common_Grid_Power=[0,-1,-190,200,50,-1,-190,200] # negative sign in power means that grid will acts as load and postive sign means grid has excess of electricity and will act as source
+#Common_Grid_Power=[30,-50,-300,200,50,-1,-190,200] # negative sign in power means that grid will acts as load and postive sign means grid has excess of electricity and will act as source
+#Battery_Power=[250,250,250,250,250,250,250,250] # Battery power remains same all the time (assumption)
+#Battery_Capacity=[10,80,20,0,0,80,20,0] # Only first entry of this array will be used in code. The rest will be updated after each time interval.
+#Reserve_Status=[1,1,0,0,0,0,0,0] # Reserve status for grid
+
+#Permanent Needs for four time intervals
+PD_Power=[0,0,0,0,0,0,0,0]
+DSM_Power=[0,0,0,0,0,0,0,0]
+
+#Permanent Offers for four time intervals
+PV_Power=[0,0,0,0,0,0,0,0]
+KWK_Power=[0,0,0,0,0,0,0,0]
+
+#Conditional Needs or Offers
+Common_Grid_Power=[250,250,-500,-250,500,-1,-190,200] # negative sign in power means that grid will acts as load and postive sign means grid has excess of electricity and will act as source
 Battery_Power=[250,250,250,250,250,250,250,250] # Battery power remains same all the time (assumption)
 Battery_Capacity=[0,80,20,0,0,80,20,0] # Only first entry of this array will be used in code. The rest will be updated after each time interval.
-Reserve_Status=[0,0,0,1,1,1,1,1] # Reserve status for grid
-
-#Needs
-#PD_Power=[300,250,50,0]
-#DSM_Power=[200,400,500,0]
-#Battery_Power=[250,250,250,250]
-
-#Offers
-#PV_Power=[0,900,500,100]
-#KWK_Power=[0,200,50,5]
-#Common_Grid_Power=[500,0,-75,0]
-#Battery_Capacity=[0,80,20,0]
-#Reserve_Status=[0,0,0,0]
+Reserve_Status=[1,1,1,1,1,1,1,1] # Reserve status for grid
+sign_change=0
 
 for t in range(int((hours*60)/15)):
     print 'iteration number:',t,'\nTime',t*15,'minutes'
@@ -600,6 +609,7 @@ for t in range(int((hours*60)/15)):
     for need in needs:
         if need.name is 'Common_Grid':
             need.power=need.power*-1
+            sign_change=1
             print 'Common Grid Power',need.power
         temp_need=need.power/N
         temp_price=need.price/N
@@ -623,11 +633,16 @@ for t in range(int((hours*60)/15)):
                 offer=offers[count]
                 
  #=====================================For Primary Reserve Settings===============================================#               
-            if need.name is 'BatteryStorage' and primary_reserve_status is 1:
-                if need.percentage_current_capacity>79: 
+
+                      
+            if need.name is 'BatteryStorage' and primary_reserve_status is 1 and offer.name is not 'Common_Grid':
+                if need.percentage_current_capacity>79:
+                    print 'offer name',offer.name
                     print 'Primary Reserve Mode, Battery will act as reserve for grid in next interval'
                     reserved_for_grid=1
-                    break
+                    if offer.name is not 'Common_Grid':
+                        break
+                    
                 
             elif offer.name is 'BatteryStorage' and primary_reserve_status is 1:
                 print offer.percentage_current_capacity
@@ -635,11 +650,10 @@ for t in range(int((hours*60)/15)):
                     print 'Primary Reserve Mode, Battery will act as offer for grid in next interval'
                     if reserved_for_grid is 0:
                         offer.power=0
-                        if count<=2:
+                        if count+1<len(offers):
                             count=count+1
                             offer=offers[count]
                         reserved_for_grid =1
-                        primary_reserve_status=0
                         print 'updation'
                         n=0
                         continue
@@ -657,7 +671,7 @@ for t in range(int((hours*60)/15)):
             if reserved_for_grid is 1 and need.name is 'Common_Grid':
                 if battery in needs:
                     n=n+N
-                    print 'n',n
+                    print 'Case when battery is not available and grid needs some source'
                     break
                 else:
                     offer=offers[index_of_BatteryStorage(offers)]
@@ -665,12 +679,17 @@ for t in range(int((hours*60)/15)):
                     
             if reserved_for_grid is 0 and need.name is 'Common_Grid':
                 n=n+N
+                print 'Reserved for Grid is 0 and Grid acting as need'
                 continue
                 
             if reserved_for_grid is 1 and need.name is 'BatteryStorage':
                 offer=offers[index_of_Grid(offers)]
-                print 'Offer name is Grid for battery', offer.name
+                print 'Offer name is for battery is', offer.name
                 
+            if reserved_for_grid is 1 and need.name is 'BatteryStorage':
+                offer=offers[index_of_Grid(offers)]
+                print 'Offer name is for battery is', offer.name
+         
                 
 #=================Grid reserve case when battery supplies electricity to grid======================================#
 
@@ -753,10 +772,14 @@ for t in range(int((hours*60)/15)):
                     if temp_need-temp_offer>=0:
                         print 'EA'
                         BatteryStorage_load_need_power_more_than_offer_power(need,offer)
+                        n=n+1
+                        continue
                         
                     elif  temp_need-temp_offer<0:
                         print 'EB'
                         BatteryStorage_load_need_power_less_than_offer_power(need,offer)
+                        n=n+1
+                        continue
                     
 #=======================Case when Grid acts as Source for Battery during high generation==============================================================#                
                           
@@ -775,8 +798,8 @@ for t in range(int((hours*60)/15)):
                 print need.name, 'power demand is satisfied now for this interval \n'
                 print_needs(needs)
                 print_offers(offers) 
-                if need.name is 'Common_Grid':
-                    reserved_for_grid=0 # resetting the grid status   
+                #if need.name is 'Common_Grid':
+                    #reserved_for_grid=0 # resetting the grid status   
                 if offer.name is 'BatteryStorage':
                     print 'Check reserve status'
                     continue  
@@ -788,7 +811,10 @@ for t in range(int((hours*60)/15)):
             if (offer.power<0.001):
                 offer.power=0
                 print offer.name,'is delpleted \n'
-                count=count+1
+                if count+1<len(offers):
+                    count=count+1
+                else: 
+                    break
                 offers = sort_price_ascending(offers)
 
                                         
@@ -804,6 +830,7 @@ for t in range(int((hours*60)/15)):
                 offer=offers[count]
                 print 'new offer', offer.name
                 n=0
+                continue
                 
             if offers[count].name is prev_offer:
                 n=n+1
@@ -818,12 +845,13 @@ for t in range(int((hours*60)/15)):
         reserved_for_grid =1
     elif primary_reserve_status is 0:
         reserved_for_grid=0
+        
+
 
     pv_profits.append(pv.profit)
     kwk_profits.append(kwk.profit)
     battery_profits.append(battery.profit)    
     common_grid_profits.append(common_grid.profit)
-    T.append(t)
     Battery_capacity.append(battery.percentage_current_capacity)
     PV_list.append(pv.power)
     KWK_list.append(kwk.power)
