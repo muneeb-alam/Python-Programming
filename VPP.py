@@ -503,12 +503,12 @@ def print_offers(offers):
     print '\n'
 
 def printPowers(needs,offers):
-        print '\nPD Power',PD_list
-        print 'DSM Power',DSM_list
-        print '\nPV Power',PV_list
-        print 'KWK Power',KWK_list        
-        print '\n Battery_capacity',Battery_capacity
-        print 'Common_Grid Power',Common_Grid_list
+        print '\nPD Power',PD_new_power
+        print 'DSM Power',DSM_new_power
+        print '\nPV Power',PV_new_power
+        print 'KWK Power',KWK_new_power        
+        print '\n Battery_new_capacity',Battery_new_capacity
+        print 'Common_Grid Power',Common_Grid__new_power
         print '\nPV Profits',pv_profits
         print 'KWK Profits',kwk_profits
         print 'Battery Profits',battery_profits
@@ -531,10 +531,9 @@ import matplotlib.pyplot as plt
 import csv
 from Classes import * 
 
-
 discharge_factor=99 # How much the battery should be discharged while supporting the grid
 N=100.0 # no of iterations  (to be written in floating form) 
-x=1 # break point
+x=7 # break point
 hours=1.0
 reserved_for_grid=0
 primary_reserve_status=0
@@ -546,25 +545,25 @@ battery_profits=list()
 common_grid_profits=list()
 
 #initialization of lists for power calculations#
-Battery_capacity=list()
-PV_list=list()
-KWK_list=list()
-PD_list=list()
-DSM_list=list()
-Common_Grid_list=list()
+Battery_new_capacity=list()
+PV_new_power=list()
+KWK_new_power=list()
+PD_new_power=list()
+DSM_new_power=list()
+Common_Grid__new_power=list()
 
 #Permanent Needs for four time intervals
-PD_Power=[0,200,200,100,100,200,200,100]
-DSM_Power=[0,300,240,200,200,300,240,200]
+PD_Power=get_PD_Power()
+DSM_Power=get_DSM_Power()
 
 #Permanent Offers for four time intervals
-PV_Power=[1000,1000,300,0,90,200,300,0]
-KWK_Power=[200,100,140,0,500,460,140,0]
+PV_Power=get_PV_Power()
+KWK_Power=get_KWK_Power()
 
 #Conditional Needs or Offers
-Common_Grid_Power=[300,-50,-300,200,50,-10,-190,200] # negative sign in power means that grid will acts as load and postive sign means grid has excess of electricity and will act as source
-Battery_Power=[250,250,250,250,250,250,250,250] # Battery power remains same all the time (assumption)
-Battery_Capacity=[0,80,20,0,0,80,20,0] # Only first entry of this array will be used in code. The rest will be updated after each time interval.
+Common_Grid_Power=get_Common_Grid_Power() # negative sign in power means that grid will acts as load and postive sign means grid has excess of electricity and will act as source
+Battery_Power=get_Battery_Power() # Battery power remains same all the time (assumption)
+Battery_Capacity=get_Battery_SOC() # Only first entry of this array will be used in code. The rest will be updated after each time interval.
 Reserve_Status=[0,0,0,0,1,1,1,1] # Reserve status for grid
 
 #Permanent Needs for four time intervals
@@ -582,7 +581,7 @@ Reserve_Status=[0,0,0,0,1,1,1,1] # Reserve status for grid
 #Reserve_Status=[1,1,1,1,1,1,1,1] # Reserve status for grid
 
 
-for t in range(int((hours*60)/15)):
+for t in range(int((hours*60)/5)):
     print 'iteration number:',t,'\nTime',t*15,'minutes'
     pv.power=int(PV_Power[t])
     kwk.power=int(KWK_Power[t])
@@ -593,7 +592,7 @@ for t in range(int((hours*60)/15)):
     common_grid.power=int(Common_Grid_Power[t])
     battery.percentage_current_capacity=int(Battery_Capacity[t])
     if t is not 0: # To update the value of battery capacity after each interval 
-        battery.percentage_current_capacity=int(Battery_capacity[t-1])  
+        battery.percentage_current_capacity=int(Battery_new_capacity[t-1])  
         print 'battery capacity',battery.percentage_current_capacity
     battery.capacity_for_grid=battery.percentage_current_capacity  # reference to determine how much battery should be discharged/charged while supporting the grid
     needs=([pd,dsm,battery,common_grid]) 
@@ -850,14 +849,15 @@ for t in range(int((hours*60)/15)):
     kwk_profits.append(kwk.profit)
     battery_profits.append(battery.profit)    
     common_grid_profits.append(common_grid.profit)
-    Battery_capacity.append(battery.percentage_current_capacity)
-    PV_list.append(pv.power)
-    KWK_list.append(kwk.power)
-    PD_list.append(pd.power)
-    DSM_list.append(dsm.power)
-    Common_Grid_list.append(common_grid.power)        
+    Battery_new_capacity.append(battery.percentage_current_capacity)
+    PV_new_power.append(pv.power)
+    KWK_new_power.append(kwk.power)
+    PD_new_power.append(pd.power)
+    DSM_new_power.append(dsm.power)
+    Common_Grid__new_power.append(common_grid.power)        
     printPowers(needs,offers)
     print 'Primary Reserve Status', primary_reserve_status,'Reserved for Grid', reserved_for_grid
+    
     if t is x:break
 
-
+print Battery_Capacity
