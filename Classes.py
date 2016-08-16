@@ -47,18 +47,16 @@ class VPP:
         class Common_Grid:
             def __init__(self,name,power,price,feed_in_price,draw_out_price,profit):
                 self.name=name
-                self.power = power
+                self.power=power
                 self.price=price        
                 self.feed_in_price=feed_in_price
                 self.draw_out_price=draw_out_price
-                self.profit=profit
-               
+                self.profit=profit              
 #========================HouseHold Objects====================================================#
-
 H1=VPP.HouseHolds('House 1')
-pd=H1.PD('PD',0,30) # name,power,price
+pd=H1.PD('PD',10,30) # name,power,price
 dsm=H1.DSM('DSM',0,28) # name,power,price
-battery=H1.BatteryStorage('BatteryStorage',250,21,250,1,250,0,0,18,26,0) #name,power,price,rated_capacity_in_kWh,ageing_factor,usable_capacity_in_kWh,percentage_current_capacity,DOD,flag,charging_priority,charging_price,discharging_price,profit 
+battery=H1.BatteryStorage('BatteryStorage',250,21,250,1,250,50,0,18,26,0) #name,power,price,rated_capacity_in_kWh,ageing_factor,usable_capacity_in_kWh,percentage_current_capacity,DOD,flag,charging_priority,charging_price,discharging_price,profit 
 pv=H1.SolarGeneratingUnit('SolarGeneratingUnit',400,1,0) # name, power,price 
 kwk=H1.KWK('KWK',0,14,0) # name, power,price
 
