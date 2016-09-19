@@ -57,7 +57,7 @@ class VirtualPowerPlant:
                     self.Price=Price
                     self.Profit=Profit
 
-            class FeedInTariff:
+            class FeedInTariff: 
                 def __init__(self,Name,Power,Price,FeedInPremier,Profit):
                     self.Name=Name
                     self.Power=Power
@@ -65,11 +65,11 @@ class VirtualPowerPlant:
                     self.FeedInPremier=FeedInPremier
                     self.Profit=Profit
                     
-            class Grid:
-                def __init__(self,Name,Power,Price):
-                    self.Name=Name
-                    self.Power=Power
-                    self.Price=Price
+class CommonGrid:
+    def __init__(self,Name,Power,Price):
+        self.Name=Name
+        self.Power=Power
+        self.Price=Price
 
 class ElectricityStockExchange:
     def __init__(self,Name,ExchangePriceScenario,PrimaryReserveStatus):
@@ -93,3 +93,4 @@ MarketBatteryStorage=H1.MarketBatteryStorage('MarketBatteryStorage',250,21,250,1
 pv=H1.MarketSolarGeneratingUnit('SolarGeneratingUnit',400,1,0) # Name, Power,Price 
 kwk=H1.MarketCogenerationUnit('MarketCogenerationUnit',0,14,0) # Name, Power,Price
 FeedInTariff=VirtualPowerPlant.H1.FeedInTariff('FeedInTariff',-10,0,12,30,0) #Name, Power,Price, FeedInPremier,draw_out_Price,Profit
+common_grid=VPP.Grid.Common_Grid('Common_Grid',-10,0,12,30,0) #name, power,price, feed_in_price,draw_out_price,profit
