@@ -1,6 +1,6 @@
 class VirtualPowerPlant:
     
-    def __init__(self,Name,ProfitsNormal,ProfitsPrimaryReserve,ProfitsGridStorage,tax,Profit):
+    def __init__(self,Name,ProfitsNormal,ProfitsPrimaryReserve,ProfitsGridStorage,Tax,Profit):
         self.Name=Name
         self.ProfitsNormal=ProfitsNormal
         self.ProfitsPrimaryReserve=ProfitsPrimaryReserve
@@ -8,7 +8,7 @@ class VirtualPowerPlant:
         self.Tax=Tax
         self.Profit=ProfitsNormal+ProfitsPrimaryReserve+ProfitsGridStorage-Tax
         
-        class Household:  
+    class Household:  
             def __init__(self,Name,ProfitsFromPR,ProfitsFromGridSupport,BuyingPrice,Profit):
                 self.Name=Name
                 self.ProfitsFromPR=ProfitsFromPR
@@ -87,12 +87,12 @@ class DistributionSystemOperator:
 
 
 #========================HouseHold Objects====================================================#
-VPP=VirtualPowerPlant('VPP')
-H1=VPP.Household('House 1')
+VPP=VirtualPowerPlant('VPP',1,1,1,1,0)
+H1=VPP.Household('House 1',1,1,1,0)
 standardConsumingDevices=H1.StandardConsumingDevices('StandardConsumingDevices',10,30) # Name,Power,Price
-dSM=H1.DSM('DSM',0,28) # Name,Power,Price
-marketBatteryStorage=H1.MarketBatteryStorage('MarketBatteryStorage',250,21,250,1,250,50,0,18,26,0) #Name,Power,Price,rated_capacity_in_kWh,AgeingFactor,UsableCapacityInKWh,PercentageCurrentCapacity,DOD,flag,charging_priority,ChargingPrice,disChargingPrice,Profit 
+dSM=H1.DSM('DSM',0,28,25) # Name,Power,Price
+marketBatteryStorage=H1.MarketBatteryStorage('MarketBatteryStorage',250,21,250,1,250,50,0,18,26,0,0) #Name,Power,Price,rated_capacity_in_kWh,AgeingFactor,UsableCapacityInKWh,PercentageCurrentCapacity,DOD,flag,charging_priority,ChargingPrice,disChargingPrice,Profit 
 marketSolarGeneratingUnit=H1.MarketSolarGeneratingUnit('SolarGeneratingUnit',400,1,0) # Name, Power,Price 
 marketCogenerationUnit=H1.MarketCogenerationUnit('MarketCogenerationUnit',0,14,0) # Name, Power,Price
-feedInTariff=VirtualPowerPlant.H1.FeedInTariff('FeedInTariff',-10,0,12,30,0) #Name, Power,Price, FeedInPremier,draw_out_Price,Profit
-commonGrid=VPP.Grid.CommonGrid('Common_Grid',-10,0,12,30,0) #name, power,price, feed_in_price,draw_out_price,profit
+feedInTariff=H1.FeedInTariff('FeedInTariff',10,0,12,0) #Name, Power,Price, FeedInPremier,draw_out_Price,Profit
+commonGrid=CommonGrid('Common_Grid',-10,0) #name, power,price, feed_in_price,draw_out_price,profit
