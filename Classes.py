@@ -1,11 +1,12 @@
 class VirtualPowerPlant:
     
-    def __init__(self,Name,ProfitsNormal,ProfitsPrimaryReserve,ProfitsGridStorage,Profits):
+    def __init__(self,Name,ProfitsNormal,ProfitsPrimaryReserve,ProfitsGridStorage,tax,Profit):
         self.Name=Name
         self.ProfitsNormal=ProfitsNormal
         self.ProfitsPrimaryReserve=ProfitsPrimaryReserve
         self.ProfitsGridStorage=ProfitsGridStorage
-        self.Profits=ProfitsNormal+ProfitsPrimaryReserve+ProfitsGridStorage
+        self.Tax=Tax
+        self.Profit=ProfitsNormal+ProfitsPrimaryReserve+ProfitsGridStorage-Tax
         
         class Household:  
             def __init__(self,Name,ProfitsFromPR,ProfitsFromGridSupport,BuyingPrice,Profit):
@@ -72,8 +73,9 @@ class CommonGrid:
         self.Price=Price
 
 class ElectricityStockExchange:
-    def __init__(self,Name,ExchangePriceScenario,PrimaryReserveStatus):
+    def __init__(self,Name,Price,ExchangePriceScenario,PrimaryReserveStatus):
         self.Name=Name
+        self.Price=Price
         self.ExchangePriceScenario=ExchangePriceScenario
         self.PrimaryReserveStatus=PrimaryReserveStatus
 
@@ -87,10 +89,10 @@ class DistributionSystemOperator:
 #========================HouseHold Objects====================================================#
 VPP=VirtualPowerPlant('VPP')
 H1=VPP.Household('House 1')
-StandardConsumingDevices=H1.StandardConsumingDevices('StandardConsumingDevices',10,30) # Name,Power,Price
-DSM=H1.DSM('DSM',0,28) # Name,Power,Price
-MarketBatteryStorage=H1.MarketBatteryStorage('MarketBatteryStorage',250,21,250,1,250,50,0,18,26,0) #Name,Power,Price,rated_capacity_in_kWh,AgeingFactor,UsableCapacityInKWh,PercentageCurrentCapacity,DOD,flag,charging_priority,ChargingPrice,disChargingPrice,Profit 
-pv=H1.MarketSolarGeneratingUnit('SolarGeneratingUnit',400,1,0) # Name, Power,Price 
-kwk=H1.MarketCogenerationUnit('MarketCogenerationUnit',0,14,0) # Name, Power,Price
-FeedInTariff=VirtualPowerPlant.H1.FeedInTariff('FeedInTariff',-10,0,12,30,0) #Name, Power,Price, FeedInPremier,draw_out_Price,Profit
-common_grid=VPP.Grid.Common_Grid('Common_Grid',-10,0,12,30,0) #name, power,price, feed_in_price,draw_out_price,profit
+standardConsumingDevices=H1.StandardConsumingDevices('StandardConsumingDevices',10,30) # Name,Power,Price
+dSM=H1.DSM('DSM',0,28) # Name,Power,Price
+marketBatteryStorage=H1.MarketBatteryStorage('MarketBatteryStorage',250,21,250,1,250,50,0,18,26,0) #Name,Power,Price,rated_capacity_in_kWh,AgeingFactor,UsableCapacityInKWh,PercentageCurrentCapacity,DOD,flag,charging_priority,ChargingPrice,disChargingPrice,Profit 
+marketSolarGeneratingUnit=H1.MarketSolarGeneratingUnit('SolarGeneratingUnit',400,1,0) # Name, Power,Price 
+marketCogenerationUnit=H1.MarketCogenerationUnit('MarketCogenerationUnit',0,14,0) # Name, Power,Price
+feedInTariff=VirtualPowerPlant.H1.FeedInTariff('FeedInTariff',-10,0,12,30,0) #Name, Power,Price, FeedInPremier,draw_out_Price,Profit
+commonGrid=VPP.Grid.CommonGrid('Common_Grid',-10,0,12,30,0) #name, power,price, feed_in_price,draw_out_price,profit
