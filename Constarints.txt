@@ -1,0 +1,48 @@
+Constraints:
+1)	VPP buys electricity from exchange at variable price (0-7 cents/kWh) and sells to households at constant price of 30 cents/kWh. The profit is selling price (about 3 cents)-buying price (average 3.5 cents) – taxes (23.5 cents). 
+Will VPP get this Exchange price value from Electricity Stock Exchange?
+Addition of Price attribute in this class
+
+2)	VPP uses battery, PV and KWK which acts as primary reserve to support weak grids in case the grid is weak. Households having battery, PV and KWK gets constant price per kWh. When grid has excess electricity, only batteries can be used to serve as load for grid and decrease the frequency of the grid. The profit for VPP is money received from grid for primary reserve minus money sent to households for supporting the grid.
+
+Where to add this price received from grid in classes?
+CommonGrid class. VPP gets a constant price of 2800 Euros per week from DSO and then send some amount of money to households as motivation to participate in balancing the grid.
+
+Where to get the power generated/needed by the grid?
+CommonGrid Class
+
+Is there any need to calculate the profits of battery, KWK and PV separately in this case or not?
+
+No the households and the battery will get constant value per kwh (both the households and the battery will get the same price)
+
+3)	In order to support DSO for peak shaving, VPP does not allow the batteries to charge fully in morning. Instead the required demand of households is met using household PVs and other cheap sources. In afternoon, when there is high irradiation, the grid peak generation will increase and the household batteries can be charged now in this time to support the grid by acting as the load for the grid. VPP profits are difference between the price received from the grid and compensation paid to household.
+
+what price is paid by grid, where to add this price in classes?
+CommonGrid Class
+
+what compensations are paid to households, in this case battery should be charged at afternoon when there is excess electricity, do the batteries have to pay price for charging or not?
+
+No, the households and the battery does not have to pay for being charged at peak generation hours.
+
+
+
+Does VPP actually get any profit from this transaction?
+
+Yes, VPP takes profit and send the remaining money to the households.
+
+(How to implement the DSO grid support logic? By reducing the price of grid smaller than battery price and charging batteries only the DSO switch allows it and when primary reserve is not needed?
+
+4)	How to implement the Feed in Tariff? Where to add the excess power generated/minimum power needed by the grid in next time interval for balancing? What is meant by profits of the Feed in Tariff class?
+Feed in Tariff class is only used for calculating the profits when PV of households is more than enough to meet the demand of households and can provide power to grid if excess PV power is available. Here power is equal to excess power of the PV. Profit calculation is done by difference of the Feed in Premium i.e. 12 cents and price of PV.
+
+5)	In which cases, the profits of PV, KWK and Battery need to be calculated?
+
+PV: Households and when supporting the Grid (constant profits) and the PR case
+KWK: Households and when supporting the PR case
+Battery: Households and Grid support (constant profits) and PR case
+
+
+6)	Should there be two types of profits, estimated and actual? Estimated profits are those which are based on optimization results while the actual ones are those which are calculated after the data received from co-simulation after settlement.
+
+Yes
+
